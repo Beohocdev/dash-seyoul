@@ -780,8 +780,8 @@ function cidDetailBlockHtml(r){
   let ordersHtml = `<div class="subTable"><div class="title">Đơn hàng (${orders.length})</div>`;
   if(orders.length===0){ ordersHtml += `Không có đơn trong phạm vi lọc`; }
   else {
-    ordersHtml += `<div class="miniList"><table><tr><td class="muted">Ngày</td><td class="muted">SĐT</td><td class="muted">Mã đơn</td><td class="muted" style="text-align:right">Doanh thu</td></tr>` +
-      orders.map(o=>`<tr><td>${o.date}</td><td>${o.Phone}</td><td>${o.OrderId}</td><td style="text-align:right">${fmt(o.Revenue)}</td></tr>`).join('') + `</table></div>`;
+    ordersHtml += `<div class="miniList"><table><tr><td class="muted">Ngày</td><td class="muted">Mã vận đơn</td><td class="muted">SĐT</td><td class="muted" style="text-align:right">Doanh thu</td><td class="muted">Trạng thái</td><td class="muted">Kênh</td><td class="muted">Ad ID</td></tr>` +
+      orders.map(o=>`<tr><td>${o.date}</td><td>${o.OrderId}</td><td>${o.Phone}</td><td style="text-align:right">${fmt(o.Revenue)}</td><td>${o.Status||'-'}</td><td>${o.Channel||'-'}</td><td>${o.AdId||'-'}</td></tr>`).join('') + `</table></div>`;
   }
   ordersHtml += `</div>`;
   return detailGridHtml([
@@ -835,7 +835,8 @@ function wirePagButtons(prefix, pageState, renderFn){
   if(nextB) nextB.addEventListener('click', ()=>{ pageState.page++; renderFn(); });
 }
 
-function renderCidRowsHtml(rows, idPrefix){
+function renderCidRowsHtml(rows, idPrefix, allRows){
+  const totalRows = allRows || rows;
   let html = `<tr><td class="muted">CID</td><td class="muted">MB Pic</td><td class="muted">MC Pic</td><td class="muted">Sản phẩm</td><td class="muted" style="text-align:right">Chi phí</td><td class="muted" style="text-align:right">Doanh thu</td><td class="muted" style="text-align:right">ROAS</td><td class="muted" style="text-align:right">CIR</td><td class="muted">Trạng thái</td></tr>`;
   rows.forEach((r,i)=>{
     const id = idPrefix+'-row-'+i;
@@ -844,12 +845,12 @@ function renderCidRowsHtml(rows, idPrefix){
     html += `<tr class="${id}" style="display:none"><td colspan="9">${cidDetailBlockHtml(r)}</td></tr>`;
   });
   if(rows.length===0){ html += `<tr><td colspan="9" class="muted" style="text-align:center;padding:20px">Không có CID nào trong phạm vi lọc</td></tr>`; }
-  else {
-    const tSpend = rows.reduce((s,r)=>s+r.Spend,0);
-    const tRev = rows.reduce((s,r)=>s+r.Doanh_thu,0);
+  if(totalRows.length>0){
+    const tSpend = totalRows.reduce((s,r)=>s+r.Spend,0);
+    const tRev = totalRows.reduce((s,r)=>s+r.Doanh_thu,0);
     const tRoas = tSpend>0? tRev/tSpend:0;
     const tCir = tRev>0? tSpend/tRev:0;
-    html += `<tr style="font-weight:700;background:rgba(88,124,255,0.06);border-top:1px solid rgb(48,56,72)"><td colspan="4">Tổng (${rows.length} CID)</td><td style="text-align:right">${fmt(tSpend)}</td><td style="text-align:right">${fmt(tRev)}</td><td style="text-align:right" class="${roasClass(tRoas)}">${fmtX(tRoas)}</td><td style="text-align:right">${fmtPct(tCir)}</td><td></td></tr>`;
+    html += `<tr style="font-weight:700;background:rgba(88,124,255,0.06);border-top:1px solid rgb(48,56,72)"><td colspan="4">Tổng (${totalRows.length} CID)</td><td style="text-align:right">${fmt(tSpend)}</td><td style="text-align:right">${fmt(tRev)}</td><td style="text-align:right" class="${roasClass(tRoas)}">${fmtX(tRoas)}</td><td style="text-align:right">${fmtPct(tCir)}</td><td></td></tr>`;
   }
   return html;
 }
@@ -863,7 +864,7 @@ function renderBoardA(){
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   const { pageRows, totalPages } = paginate(rows, boardA);
-  document.getElementById('boardA-body').innerHTML = renderCidRowsHtml(pageRows, 'boardA');
+  document.getElementById('boardA-body').innerHTML = renderCidRowsHtml(pageRows, 'boardA', rows);
   wireExpand('#boardA-body');
   document.getElementById('boardA-pag').innerHTML = pagHtml(boardA, totalPages, 'boardA');
   wirePagButtons('boardA', boardA, renderBoardA);
@@ -878,7 +879,7 @@ function renderBoardB(){
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   const { pageRows, totalPages } = paginate(rows, boardB);
-  document.getElementById('boardB-body').innerHTML = renderCidRowsHtml(pageRows, 'boardB');
+  document.getElementById('boardB-body').innerHTML = renderCidRowsHtml(pageRows, 'boardB', rows);
   wireExpand('#boardB-body');
   document.getElementById('boardB-pag').innerHTML = pagHtml(boardB, totalPages, 'boardB');
   wirePagButtons('boardB', boardB, renderBoardB);
@@ -894,7 +895,7 @@ function renderBoardC(){
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   const { pageRows, totalPages } = paginate(rows, boardC);
-  document.getElementById('boardC-body').innerHTML = renderCidRowsHtml(pageRows, 'boardC');
+  document.getElementById('boardC-body').innerHTML = renderCidRowsHtml(pageRows, 'boardC', rows);
   wireExpand('#boardC-body');
   document.getElementById('boardC-pag').innerHTML = pagHtml(boardC, totalPages, 'boardC');
   wirePagButtons('boardC', boardC, renderBoardC);
@@ -910,7 +911,7 @@ function renderBoardD(){
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   const { pageRows, totalPages } = paginate(rows, boardD);
-  document.getElementById('boardD-body').innerHTML = renderCidRowsHtml(pageRows, 'boardD');
+  document.getElementById('boardD-body').innerHTML = renderCidRowsHtml(pageRows, 'boardD', rows);
   wireExpand('#boardD-body');
   document.getElementById('boardD-pag').innerHTML = pagHtml(boardD, totalPages, 'boardD');
   wirePagButtons('boardD', boardD, renderBoardD);
