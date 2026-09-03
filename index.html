@@ -100,7 +100,7 @@
   .miniList { max-height:220px; overflow-y:auto; }
 
   #appRoot { transition: filter .25s ease; }
-  #appRoot.gated { filter: blur(18px) brightness(0.55); pointer-events:none; user-select:none; }
+  #appRoot.gated { filter: blur(22px) brightness(0.32) saturate(1.1); pointer-events:none; user-select:none; }
 
   #loginGate { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; background:rgba(6,8,13,0.55); }
   #loginGate.hidden { display:none; }
@@ -114,8 +114,8 @@
   .loginCard button:hover:not(:disabled) { background:rgb(48,84,220); }
   .loginErr { color:rgb(248,113,113); font-size:12px; margin:-2px 0 12px; min-height:14px; }
 
-  #devtoolsBlock { position:fixed; inset:0; z-index:99999; background:#000; color:#fff; display:none; align-items:center; justify-content:center; font-size:22px; font-weight:700; text-align:center; padding:20px; font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
-  #devtoolsBlock.show { display:flex; }
+  #devtoolsBlock { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.9); z-index:99999; background:rgb(26,14,14); border:1px solid rgba(248,113,113,0.5); color:#fff; padding:14px 20px; border-radius:12px; font-size:13.5px; font-weight:600; text-align:center; max-width:300px; box-shadow:0 16px 44px rgba(0,0,0,0.55); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
+  #devtoolsBlock.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
 </style>
 </head>
 <body>
@@ -128,10 +128,19 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 15a5 5 0 0 1 10 0"></path><path d="M12 15l2.2-2.6"></path></svg>
       Seyoul SG Dashboard
     </div>
-    <p class="sub">Nhập email nội bộ (@tvhs.asia) để xem dữ liệu</p>
-    <input type="email" id="gateEmailInput" placeholder="email@tvhs.asia" autocomplete="email">
-    <div class="loginErr" id="gateErr"></div>
-    <button id="gateSubmitBtn">Đăng nhập</button>
+    <div id="gateStep1">
+      <p class="sub">Nhập email nội bộ (@tvhs.asia) để nhận mã xác thực</p>
+      <input type="email" id="gateEmailInput" placeholder="email@tvhs.asia" autocomplete="email">
+      <div class="loginErr" id="gateErr"></div>
+      <button id="gateSendOtpBtn">Gửi mã xác thực</button>
+    </div>
+    <div id="gateStep2" style="display:none">
+      <p class="sub">Nhập mã 6 số vừa gửi tới <b id="gateOtpEmailLabel"></b></p>
+      <input type="text" id="gateOtpInput" placeholder="Mã xác thực" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+      <div class="loginErr" id="gateOtpErr"></div>
+      <button id="gateVerifyBtn">Xác nhận</button>
+      <div style="margin-top:12px;font-size:12px;color:rgb(148,157,176);cursor:pointer" id="gateBackBtn">&larr; Đổi email khác</div>
+    </div>
   </div>
 </div>
 
@@ -332,27 +341,44 @@
   let devtoolsOpen = false;
   const threshold = 160;
   const blockEl = document.getElementById('devtoolsBlock');
+  let hideTimer = null;
+
+  function showToast(){
+    blockEl.classList.add('show');
+    if(hideTimer) clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){ blockEl.classList.remove('show'); }, 5000);
+  }
+
   function checkDevtools(){
     const widthGap = window.outerWidth - window.innerWidth > threshold;
     const heightGap = window.outerHeight - window.innerHeight > threshold;
     const isOpen = widthGap || heightGap;
-    if(isOpen !== devtoolsOpen){
-      devtoolsOpen = isOpen;
-      blockEl.classList.toggle('show', devtoolsOpen);
+    if(isOpen && !devtoolsOpen){
+      devtoolsOpen = true;
+      showToast();
+    } else if(!isOpen && devtoolsOpen){
+      devtoolsOpen = false;
+    } else if(isOpen && devtoolsOpen && !blockEl.classList.contains('show')){
+      showToast();
     }
   }
   setInterval(checkDevtools, 500);
   window.addEventListener('resize', checkDevtools);
 
-  let devtoolsTimerFired = false;
   setInterval(function(){
     const start = performance.now();
     // eslint-disable-next-line no-debugger
     debugger;
     const delta = performance.now() - start;
-    devtoolsTimerFired = delta > 100;
-    blockEl.classList.toggle('show', devtoolsOpen || devtoolsTimerFired);
+    if(delta > 100){
+      devtoolsOpen = true;
+      if(!blockEl.classList.contains('show')) showToast();
+    }
   }, 800);
+
+  document.addEventListener('click', function(){
+    if(devtoolsOpen && !blockEl.classList.contains('show')) showToast();
+  });
 
   document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   document.addEventListener('keydown', function(e){
@@ -364,57 +390,131 @@
 })();
 
 const API_URL = 'https://dash-seyoul-api.nguyenkhacquan3194.workers.dev';
+const OTP_URL = 'https://script.google.com/macros/s/AKfycbzQoWGB2ieM4-KfNXN-bTbH1S7fYqK9tGt2PdjxnaVwvW79ZDYhTAfogSXWF1prog/exec';
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24h - sau đó phải xin mã lại
+
 const appRoot = document.getElementById('appRoot');
 const loginGate = document.getElementById('loginGate');
+const gateStep1 = document.getElementById('gateStep1');
+const gateStep2 = document.getElementById('gateStep2');
 const gateEmailInput = document.getElementById('gateEmailInput');
-const gateSubmitBtn = document.getElementById('gateSubmitBtn');
+const gateSendOtpBtn = document.getElementById('gateSendOtpBtn');
 const gateErr = document.getElementById('gateErr');
+const gateOtpInput = document.getElementById('gateOtpInput');
+const gateOtpErr = document.getElementById('gateOtpErr');
+const gateVerifyBtn = document.getElementById('gateVerifyBtn');
+const gateBackBtn = document.getElementById('gateBackBtn');
+const gateOtpEmailLabel = document.getElementById('gateOtpEmailLabel');
 
-function getSavedEmail(){
-  const params = new URLSearchParams(location.search);
-  return (params.get('email') || localStorage.getItem('seyoul_viewer_email') || '').trim();
+function unlockApp(){ loginGate.classList.add('hidden'); appRoot.classList.remove('gated'); }
+
+async function fetchDashboardData(email){
+  const resp = await fetch(API_URL + '?email=' + encodeURIComponent(email), { cache:'no-store' });
+  return resp.json();
 }
 
-async function tryLogin(email){
+async function sendOtp(email){
   gateErr.textContent = '';
-  gateSubmitBtn.disabled = true;
-  gateSubmitBtn.textContent = 'Đang kiểm tra...';
-  let data;
+  gateSendOtpBtn.disabled = true;
+  gateSendOtpBtn.textContent = 'Đang gửi...';
+  let res;
   try {
-    const resp = await fetch(API_URL + '?email=' + encodeURIComponent(email), { cache:'no-store' });
-    data = await resp.json();
+    const resp = await fetch(OTP_URL + '?action=send_otp&email=' + encodeURIComponent(email), { cache:'no-store' });
+    res = await resp.json();
   } catch(err) {
     gateErr.textContent = 'Không kết nối được máy chủ. Thử lại.';
-    gateSubmitBtn.disabled = false;
-    gateSubmitBtn.textContent = 'Đăng nhập';
-    return null;
+    gateSendOtpBtn.disabled = false;
+    gateSendOtpBtn.textContent = 'Gửi mã xác thực';
+    return false;
   }
-  if(!data.meta || data.meta.role === 'denied'){
-    gateErr.textContent = 'Email này chưa được cấp quyền truy cập.';
-    gateSubmitBtn.disabled = false;
-    gateSubmitBtn.textContent = 'Đăng nhập';
-    localStorage.removeItem('seyoul_viewer_email');
-    return null;
+  gateSendOtpBtn.disabled = false;
+  gateSendOtpBtn.textContent = 'Gửi mã xác thực';
+  if(!res.ok){
+    gateErr.textContent = res.error === 'not_authorized'
+      ? 'Email này chưa được cấp quyền truy cập.'
+      : 'Không gửi được mã. Thử lại.';
+    return false;
   }
-  localStorage.setItem('seyoul_viewer_email', email);
-  return data;
+  return true;
 }
 
-gateSubmitBtn.addEventListener('click', async function(){
+async function verifyOtp(email, code){
+  gateOtpErr.textContent = '';
+  gateVerifyBtn.disabled = true;
+  gateVerifyBtn.textContent = 'Đang xác nhận...';
+  let res;
+  try {
+    const resp = await fetch(OTP_URL + '?action=verify_otp&email=' + encodeURIComponent(email) + '&code=' + encodeURIComponent(code), { cache:'no-store' });
+    res = await resp.json();
+  } catch(err) {
+    gateOtpErr.textContent = 'Không kết nối được máy chủ. Thử lại.';
+    gateVerifyBtn.disabled = false;
+    gateVerifyBtn.textContent = 'Xác nhận';
+    return false;
+  }
+  gateVerifyBtn.disabled = false;
+  gateVerifyBtn.textContent = 'Xác nhận';
+  if(!res.ok){
+    gateOtpErr.textContent = 'Mã không đúng hoặc đã hết hạn.';
+    return false;
+  }
+  return true;
+}
+
+gateSendOtpBtn.addEventListener('click', async function(){
   const email = gateEmailInput.value.trim();
   if(!email){ gateErr.textContent = 'Vui lòng nhập email.'; return; }
-  const data = await tryLogin(email);
-  if(data){ loginGate.classList.add('hidden'); appRoot.classList.remove('gated'); runDashboard(email, data); }
+  const ok = await sendOtp(email);
+  if(ok){
+    gateOtpEmailLabel.textContent = email;
+    gateStep1.style.display = 'none';
+    gateStep2.style.display = 'block';
+    gateOtpInput.value = '';
+    gateOtpInput.focus();
+  }
 });
-gateEmailInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') gateSubmitBtn.click(); });
+gateEmailInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') gateSendOtpBtn.click(); });
+
+gateVerifyBtn.addEventListener('click', async function(){
+  const email = gateEmailInput.value.trim();
+  const code = gateOtpInput.value.trim();
+  if(!code){ gateOtpErr.textContent = 'Vui lòng nhập mã.'; return; }
+  const verified = await verifyOtp(email, code);
+  if(!verified) return;
+  const data = await fetchDashboardData(email);
+  if(!data.meta || data.meta.role === 'denied'){
+    gateOtpErr.textContent = 'Email này chưa được cấp quyền truy cập.';
+    return;
+  }
+  localStorage.setItem('seyoul_viewer_email', email);
+  localStorage.setItem('seyoul_verified_at', String(Date.now()));
+  unlockApp();
+  runDashboard(email, data);
+});
+gateOtpInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') gateVerifyBtn.click(); });
+
+gateBackBtn.addEventListener('click', function(){
+  gateStep2.style.display = 'none';
+  gateStep1.style.display = 'block';
+  gateErr.textContent = '';
+  gateOtpErr.textContent = '';
+});
 
 (async function boot(){
-  const saved = getSavedEmail();
-  if(saved){
-    gateEmailInput.value = saved;
-    const data = await tryLogin(saved);
-    if(data){ loginGate.classList.add('hidden'); appRoot.classList.remove('gated'); runDashboard(saved, data); return; }
+  const savedEmail = (localStorage.getItem('seyoul_viewer_email') || '').trim();
+  const verifiedAt = Number(localStorage.getItem('seyoul_verified_at') || 0);
+  const stillValid = savedEmail && verifiedAt && (Date.now() - verifiedAt < SESSION_TTL_MS);
+  if(stillValid){
+    const data = await fetchDashboardData(savedEmail);
+    if(data.meta && data.meta.role !== 'denied'){
+      unlockApp();
+      runDashboard(savedEmail, data);
+      return;
+    }
+    localStorage.removeItem('seyoul_viewer_email');
+    localStorage.removeItem('seyoul_verified_at');
   }
+  if(savedEmail) gateEmailInput.value = savedEmail;
 })();
 
 async function runDashboard(VIEWER_EMAIL, DATA){
