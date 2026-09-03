@@ -97,7 +97,14 @@
   .header .title { font-size:26px; font-weight:700; display:flex; align-items:center; gap:10px; justify-content:center; grid-column:2; text-align:center; }
   .header .titleSub { font-size:14px; font-weight:400; color:var(--text-muted); margin-left:8px; }
   .header .right { display:flex; align-items:center; gap:12px; font-size:13px; color:var(--text-muted); position:relative; grid-column:3; justify-content:flex-end; }
-  .clock { font-variant-numeric:tabular-nums; color:rgb(180,190,210); font-size:13px; }
+  .clock { font-variant-numeric:tabular-nums; color:rgb(88,124,255); font-weight:700; font-size:13px; background:rgba(88,124,255,0.12); padding:5px 10px; border-radius:6px; }
+  body.light-theme .clock { color:rgb(37,71,201); background:rgba(37,71,201,0.10); }
+  .refreshBtn { background:none; border:1px solid rgb(48,56,72); color:var(--text-muted); border-radius:8px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .refreshBtn:hover { color:#fff; border-color:rgb(88,124,255); background:rgba(88,124,255,0.12); }
+  .refreshBtn.spinning svg { animation:spin360 .7s linear; }
+  @keyframes spin360 { to { transform:rotate(360deg); } }
+  body.light-theme .refreshBtn { border-color:rgb(200,206,220); color:rgb(70,78,96); background:rgb(242,244,248); }
+  body.light-theme .refreshBtn:hover { color:#fff; background:rgb(88,124,255); border-color:rgb(88,124,255); }
   .dateBtn { background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-input); border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px; }
   .dateMenu { position:absolute; top:40px; right:0; background:var(--bg-elevated); border:1px solid var(--border-input); border-radius:10px; width:230px; padding:6px; z-index:20; display:none; }
   .dateMenu.open { display:block; }
@@ -263,6 +270,9 @@
       <div class="themeSwitch"><div class="knob"></div></div>
       <span>☀️</span>
     </div>
+    <button type="button" class="refreshBtn" id="refreshBtn" title="Tải lại trang">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+    </button>
     <span class="clock" id="clockBox">--/--/---- --:--:--</span>
     <div style="position:relative">
       <div class="dateBtn" id="dateBtnToggle">Hôm nay <span>&#9662;</span></div>
@@ -460,6 +470,13 @@
   const savedTheme = localStorage.getItem('seyoul_theme');
   if(savedTheme === 'light') document.body.classList.add('light-theme');
   else document.body.classList.remove('light-theme');
+  const refreshBtn = document.getElementById('refreshBtn');
+  if(refreshBtn){
+    refreshBtn.addEventListener('click', function(){
+      refreshBtn.classList.add('spinning');
+      location.reload();
+    });
+  }
   const themeToggle = document.getElementById('themeToggle');
   if(themeToggle){
     themeToggle.addEventListener('click', function(){
@@ -763,7 +780,9 @@ function renderRevChart(){
   const dates = Array.from(new Set([...ads.map(r=>r.date), ...ord.map(r=>r.date)])).sort();
   const costByDate = {}, revByDate = {};
   ads.forEach(r=>{ costByDate[r.date]=(costByDate[r.date]||0)+r.Spend; });
-  ord.forEach(r=>{ if(r.status==='matched') revByDate[r.date]=(revByDate[r.date]||0)+r.Revenue; });
+  // Doanh thu tổng (mọi trạng thái) — không chỉ tính đơn đã quy CID, để khớp
+  // với cách tính CIR/ROAS ở KPI card trên cùng.
+  ord.forEach(r=>{ revByDate[r.date]=(revByDate[r.date]||0)+r.Revenue; });
   if(revChart) revChart.destroy();
   const tc1 = chartThemeColors();
   revChart = new Chart(document.getElementById('revChart'), {
@@ -771,7 +790,7 @@ function renderRevChart(){
     data:{ labels:dates.map(d=>d.slice(5)),
       datasets:[
         { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(88,124,255)', backgroundColor:'rgba(88,124,255,0.12)', fill:true, tension:0.3, pointRadius:2 },
-        { label:'Doanh thu (quy CID)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(74,222,128)', backgroundColor:'rgba(74,222,128,0.12)', fill:true, tension:0.3, pointRadius:2 }
+        { label:'Doanh thu tổng (mọi trạng thái)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(74,222,128)', backgroundColor:'rgba(74,222,128,0.12)', fill:true, tension:0.3, pointRadius:2 }
       ]},
     options:{ responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
