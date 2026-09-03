@@ -37,6 +37,34 @@
   .themeSwitch { width:40px; height:22px; border-radius:12px; background:var(--bg-input); border:1px solid var(--border-input); position:relative; transition:background .2s ease; flex-shrink:0; }
   .themeSwitch .knob { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:rgb(88,124,255); transition:left .2s ease; }
   body.light-theme .themeSwitch .knob { left:20px; background:rgb(37,71,201); }
+
+  /* --- Light theme contrast overrides --- */
+  body.light-theme .panel { box-shadow:0 1px 3px rgba(20,26,40,0.06); }
+  body.light-theme .tab.active { color:rgb(20,24,34); font-weight:700; }
+  body.light-theme .subtab { color:rgb(70,78,96); background:rgb(236,239,246); border-color:rgb(210,216,228); }
+  body.light-theme .subtab.active { background:rgb(37,71,201); color:#fff; border-color:rgb(37,71,201); }
+  body.light-theme .boardFilter { color:rgb(70,78,96); }
+  body.light-theme .boardFilter select { color:rgb(28,32,42); background:rgb(242,244,248); border-color:rgb(200,206,220); }
+  body.light-theme select { background:rgb(242,244,248); color:rgb(28,32,42); border-color:rgb(200,206,220); }
+  body.light-theme .searchIconBtn { border-color:rgb(200,206,220); color:rgb(70,78,96); background:rgb(242,244,248); }
+  body.light-theme .searchIconBtn:hover { color:#fff; background:rgb(88,124,255); border-color:rgb(88,124,255); }
+  body.light-theme .searchInput { border-color:rgb(200,206,220); background:#fff; color:rgb(28,32,42); }
+  body.light-theme .pagBtn { color:rgb(28,32,42); background:rgb(242,244,248); border-color:rgb(200,206,220); }
+  body.light-theme .pagBtn:hover:not(:disabled) { background:rgb(228,232,242); }
+  body.light-theme .sidebarRange input { color:rgb(28,32,42); background:rgb(242,244,248); border-color:rgb(200,206,220); }
+  body.light-theme .badge-warn { background:rgba(220,38,38,0.12); color:rgb(185,28,28); border-color:rgba(220,38,38,0.35); }
+  body.light-theme .badge-cir-great { background:rgba(22,163,74,0.14); color:rgb(21,128,61); border-color:rgba(22,163,74,0.4); }
+  body.light-theme .badge-cir-good { background:rgba(37,99,235,0.14); color:rgb(29,78,216); border-color:rgba(37,99,235,0.38); }
+  body.light-theme .badge-cir-warn { background:rgba(217,119,6,0.16); color:rgb(161,98,7); border-color:rgba(217,119,6,0.4); }
+  body.light-theme .badge-cir-bad { background:rgba(220,38,38,0.14); color:rgb(185,28,28); border-color:rgba(220,38,38,0.4); }
+  body.light-theme .badge-cir-neutral { background:rgba(100,108,128,0.14); color:rgb(75,83,102); border-color:rgba(100,108,128,0.35); }
+  body.light-theme .badge-cir-testing { background:rgba(147,51,234,0.14); color:rgb(126,34,206); border-color:rgba(147,51,234,0.38); }
+  body.light-theme .good { color:rgb(21,128,61); }
+  body.light-theme .bad { color:rgb(185,28,28); }
+  body.light-theme .warn { color:rgb(161,98,7); }
+  body.light-theme .sidebarKpiSmall { background:rgba(37,71,201,0.10); }
+  body.light-theme .sidebarKpiSmall .l { color:rgb(37,71,201); }
+  body.light-theme .sidebarKpiSmall .v { color:rgb(28,32,42); }
   * { box-sizing: border-box; outline:none; -webkit-tap-highlight-color:transparent; }
   body { margin:0; background:var(--bg-page); color:var(--text-primary); font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
   .header { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border-strong); flex-wrap:wrap; gap:10px; }
@@ -115,6 +143,7 @@
   .sidebarKpiSmall .l { font-size:11px; color:rgb(150,175,255); margin:0 0 4px; }
   .sidebarKpiSmall .v { font-size:20px; font-weight:700; color:#fff; margin:0; }
   .boardTitle { font-size:15px; font-weight:700; margin:0 0 12px; }
+  .boardDateLabel { font-size:12px; font-weight:400; color:var(--text-muted); margin-left:6px; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
   td { padding:8px 6px; border-bottom:1px solid var(--border-table); white-space:nowrap; }
   .muted { color:var(--text-muted); font-size:12px; text-transform:uppercase; }
@@ -123,12 +152,15 @@
   .warn { color:rgb(250,204,21); }
   .rowClick { cursor:pointer; user-select:none; }
   .rowClick:hover { background:var(--bg-input); }
-  .detailGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px 16px; background:var(--bg-inset); border-radius:8px; padding:14px; margin:4px 0 4px; }
+  .detailCluster { background:var(--bg-inset); border:1px solid var(--border-panel); border-radius:12px; padding:18px; margin:8px 0 8px 24px; box-shadow:0 10px 28px rgba(0,0,0,0.28), 0 1px 0 rgba(255,255,255,0.03) inset; }
+  .detailGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px 16px; }
+  .copyBtn { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; margin-left:6px; border:none; background:none; color:var(--text-muted); cursor:pointer; border-radius:4px; font-size:12px; vertical-align:middle; }
+  .copyBtn:hover { color:rgb(88,124,255); background:rgba(88,124,255,0.12); }
   .detailGrid div .k { font-size:11px; color:rgb(120,128,145); margin-bottom:3px; white-space:nowrap; }
   .detailGrid div .v { font-size:13px; font-weight:600; word-break:break-word; }
   .chev { display:inline-block; width:14px; color:rgb(120,128,145); }
   .tableWrap { overflow-x:auto; }
-  .subTable { font-size:12px; margin:0 0 10px; background:var(--bg-inset); border-radius:8px; padding:8px 12px; }
+  .subTable { font-size:12px; margin:14px 0 0; padding-top:14px; border-top:1px solid var(--border-panel); }
   .subTable .title { font-size:11px; text-transform:uppercase; color:rgb(120,128,145); margin-bottom:6px; }
   .miniList { max-height:220px; overflow-y:auto; }
 
@@ -181,7 +213,7 @@
 <div class="header">
   <div class="title">
     <span style="display:inline-flex;align-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 15a5 5 0 0 1 10 0"></path><path d="M12 15l2.2-2.6"></path><line x1="6" y1="9" x2="6.6" y2="9.6"></line><line x1="18" y1="9" x2="17.4" y2="9.6"></line><line x1="12" y1="7.5" x2="12" y2="8.3"></line><line x1="16" y1="6" x2="15" y2="7"></line><line x1="8" y1="6" x2="9" y2="7"></line><rect x="15.5" y="6" width="4.5" height="1.4" rx="0.5"></rect><circle cx="21" cy="9" r="0.6" fill="currentColor" stroke="none"></circle><rect x="4" y="16.5" width="1.4" height="2" fill="currentColor" stroke="none"></rect><rect x="6" y="15" width="1.4" height="3.5" fill="currentColor" stroke="none"></rect><rect x="8" y="14" width="1.4" height="4.5" fill="currentColor" stroke="none"></rect></svg></span> Dashboard Performance - Seyoul SG
-    <span class="titleSub" id="scopeLabel">Tổng</span>
+    <span class="titleSub" id="scopeLabel">- Tổng</span>
   </div>
   <div class="right">
     <div class="themeToggle" id="themeToggle" title="Đổi giao diện Sáng/Tối">
@@ -282,7 +314,7 @@
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Media Buyer</h3>
+      <h3 class="boardTitle">Thống kê theo Media Buyer <span class="boardDateLabel">- Hôm nay</span></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardA-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardA-underline"></span>
@@ -303,7 +335,7 @@
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Media Creator</h3>
+      <h3 class="boardTitle">Thống kê theo Media Creator <span class="boardDateLabel">- Hôm nay</span></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardB-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardB-underline"></span>
@@ -324,7 +356,7 @@
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Nền tảng</h3>
+      <h3 class="boardTitle">Thống kê theo Nền tảng <span class="boardDateLabel">- Hôm nay</span></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardC-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardC-underline"></span>
@@ -347,7 +379,7 @@
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Sản phẩm</h3>
+      <h3 class="boardTitle">Thống kê theo Sản phẩm <span class="boardDateLabel">- Hôm nay</span></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardD-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardD-underline"></span>
@@ -386,8 +418,8 @@
       if(window.Chart){
         Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
         Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue('--border-table').trim();
-        Object.values(Chart.instances || {}).forEach(function(c){ c.update(); });
       }
+      if(typeof renderAll === 'function') renderAll();
     });
   }
 })();
@@ -661,7 +693,21 @@ function renderKPI(){
   const cir = ord.Doanh_thu_matched>0? ads.Spend/ord.Doanh_thu_matched:0;
   const cvr = (ads.Mess+ads.Lead)>0? ord.MatchedOrderCount/(ads.Mess+ads.Lead):0;
   const aov = ord.OrderCount>0? ord.Doanh_thu/ord.OrderCount:0;
-  const cards = [
+  const isLight = document.body.classList.contains('light-theme');
+  const cards = isLight ? [
+    ['Chi phí (Ads)', fmt(ads.Spend), 'rgba(37,71,201,0.16)','rgb(29,55,158)'],
+    ['Doanh thu (quy CID)', fmt(ord.Doanh_thu_matched), 'rgba(21,128,61,0.16)','rgb(15,101,48)'],
+    ['ROAS', fmtX(roas), 'rgba(109,40,217,0.16)','rgb(88,28,175)'],
+    ['CIR', fmtPct(cir), 'rgba(180,120,6,0.18)','rgb(146,90,5)'],
+    ['CPM', fmt(ads.CPM), 'rgba(3,105,161,0.16)','rgb(2,84,129)'],
+    ['CVR', fmtPct(cvr), 'rgba(4,120,87,0.16)','rgb(3,96,70)'],
+    ['Đơn hàng', fmtN(ord.OrderCount), 'rgba(67,56,202,0.16)','rgb(53,45,163)'],
+    ['AOV (giá trị TB/đơn)', fmt(aov), 'rgba(190,24,93,0.16)','rgb(153,19,75)'],
+    ['Doanh thu tổng (mọi trạng thái)', fmt(ord.Doanh_thu), 'rgba(15,118,110,0.16)','rgb(12,94,88)'],
+    ['Doanh thu Mess', fmt(ord.Doanh_thu_Mess), 'rgba(194,65,12,0.16)','rgb(155,52,10)'],
+    ['Doanh thu Webcake (LDP)', fmt(ord.Doanh_thu_LDP), 'rgba(29,78,216,0.16)','rgb(23,62,173)'],
+    ['Doanh thu chưa gắn CID', fmt(ord.Doanh_thu_unident), 'rgba(185,28,28,0.16)','rgb(148,22,22)'],
+  ] : [
     ['Chi phí (Ads)', fmt(ads.Spend), 'rgba(88,124,255,0.14)','rgb(150,175,255)'],
     ['Doanh thu (quy CID)', fmt(ord.Doanh_thu_matched), 'rgba(74,222,128,0.14)','rgb(120,220,150)'],
     ['ROAS', fmtX(roas), 'rgba(168,139,250,0.14)','rgb(190,160,250)'],
@@ -771,6 +817,11 @@ function renderMbChart(){
   document.getElementById('mbRoasLabels').innerHTML = rows.map(m=>`<span class="${roasClass(m.ROAS)}">${m.MB}: ROAS ${fmtX(m.ROAS)}</span>`).join('');
 }
 
+function copyBtnHtml(text){
+  const safe = String(text||'').replace(/'/g,"\\'");
+  return `<button type="button" class="copyBtn" title="Copy" onclick="event.stopPropagation(); navigator.clipboard.writeText('${safe}'); this.textContent='✓'; setTimeout(()=>{this.textContent='📋';},1000);">📋</button>`;
+}
+
 function detailGridHtml(fields){
   return '<div class="detailGrid">' + fields.map(f=>`<div><div class="k">${f[0]}</div><div class="v">${f[1]}</div></div>`).join('') + '</div>';
 }
@@ -781,16 +832,16 @@ function cidDetailBlockHtml(r){
   if(orders.length===0){ ordersHtml += `Không có đơn trong phạm vi lọc`; }
   else {
     ordersHtml += `<div class="miniList"><table><tr><td class="muted">Ngày</td><td class="muted">Mã vận đơn</td><td class="muted">SĐT</td><td class="muted" style="text-align:right">Doanh thu</td><td class="muted">Trạng thái</td><td class="muted">Kênh</td><td class="muted">Ad ID</td></tr>` +
-      orders.map(o=>`<tr><td>${o.date}</td><td>${o.OrderId}</td><td>${o.Phone}</td><td style="text-align:right">${fmt(o.Revenue)}</td><td>${o.Status||'-'}</td><td>${o.Channel||'-'}</td><td>${o.AdId||'-'}</td></tr>`).join('') + `</table></div>`;
+      orders.map(o=>`<tr><td>${o.date}</td><td>${o.OrderId}</td><td>${o.Phone}${copyBtnHtml(o.Phone)}</td><td style="text-align:right">${fmt(o.Revenue)}</td><td>${o.Status||'-'}</td><td>${o.Channel||'-'}</td><td>${o.AdId||'-'}</td></tr>`).join('') + `</table></div>`;
   }
   ordersHtml += `</div>`;
-  return detailGridHtml([
+  return `<div class="detailCluster">` + detailGridHtml([
     ['MB Pic', r.MB], ['MC Pic', r.MC], ['Sản phẩm', r.Product||'-'],
     ['Spend', fmt(r.Spend)], ['Impressions', fmtN(r.Impressions)], ['Clicks', fmtN(r.Clicks)], ['Reach', fmtN(r.Reach)],
     ['CTR', fmtPct(r.CTR)], ['CPM', fmt(r.CPM)], ['CVR', fmtPct(r.CVR)], ['Mess/Lead', fmtN(r.Mess+r.Lead)],
     ['ThruPlay', fmtN(r.ThruPlay)], ['Video3sViews', fmtN(r.Video3s)], ['Hook Rate', fmtPct(r.HookRate)],
     ['Doanh thu', fmt(r.Doanh_thu)], ['Đơn hàng', fmtN(r.OrderCount)], ['ROAS', fmtX(r.ROAS)], ['CIR', fmtPct(r.CIR)]
-  ]) + ordersHtml;
+  ]) + ordersHtml + `</div>`;
 }
 
 function cirBadge(cir, revenue, spend){
@@ -841,7 +892,7 @@ function renderCidRowsHtml(rows, idPrefix, allRows){
   rows.forEach((r,i)=>{
     const id = idPrefix+'-row-'+i;
     const warn = cirBadge(r.CIR, r.Doanh_thu, r.Spend);
-    html += `<tr class="rowClick" data-target="${id}"><td><span class="chev">›</span>${r.CID}</td><td>${r.MB}</td><td>${r.MC}</td><td>${r.Product||'-'}</td><td style="text-align:right">${fmt(r.Spend)}</td><td style="text-align:right">${fmt(r.Doanh_thu)}</td><td style="text-align:right" class="${roasClass(r.ROAS)}">${fmtX(r.ROAS)}</td><td style="text-align:right">${fmtPct(r.CIR)}</td><td>${warn}</td></tr>`;
+    html += `<tr class="rowClick" data-target="${id}"><td><span class="chev">›</span>${r.CID}${copyBtnHtml(r.CID)}</td><td>${r.MB}</td><td>${r.MC}</td><td>${r.Product||'-'}</td><td style="text-align:right">${fmt(r.Spend)}</td><td style="text-align:right">${fmt(r.Doanh_thu)}</td><td style="text-align:right" class="${roasClass(r.ROAS)}">${fmtX(r.ROAS)}</td><td style="text-align:right">${fmtPct(r.CIR)}</td><td>${warn}</td></tr>`;
     html += `<tr class="${id}" style="display:none"><td colspan="9">${cidDetailBlockHtml(r)}</td></tr>`;
   });
   if(rows.length===0){ html += `<tr><td colspan="9" class="muted" style="text-align:center;padding:20px">Không có CID nào trong phạm vi lọc</td></tr>`; }
@@ -1022,6 +1073,8 @@ function renderAll(){
   renderBoardA(); renderBoardB(); renderBoardC(); renderBoardD();
   renderSidebarSpendKpi();
   renderSidebarPies();
+  const cleanPresetLabel = String(state.presetLabel||'').replace(/✓/g,'').trim();
+  document.querySelectorAll('.boardDateLabel').forEach(el=>{ el.textContent = '- ' + cleanPresetLabel; });
 }
 
 document.getElementById('toggleSidebar').addEventListener('click', function(){
@@ -1034,7 +1087,7 @@ document.querySelectorAll('.sbitem').forEach(el=>{
     document.querySelectorAll('.sbitem').forEach(s=>s.classList.remove('active'));
     el.classList.add('active');
     state.scope = { type: el.dataset.type, value: el.dataset.value };
-    document.getElementById('scopeLabel').textContent = el.textContent;
+    document.getElementById('scopeLabel').textContent = '- ' + el.textContent;
     renderAll();
   });
 });
