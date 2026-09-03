@@ -664,6 +664,9 @@ function computeRange(preset){
 function inRange(dateStr, start, end){ const t = toDate(dateStr).getTime(); return t>=start.getTime() && t<=end.getTime(); }
 function cidMC(cid){ return (REF[cid] && REF[cid]['MC PIC']) || null; }
 function cidProduct(cid){ return (REF[cid] && REF[cid]['Sản phẩm']) || ''; }
+function cidLinkVideo(cid){ return (REF[cid] && REF[cid]['Link Video']) || ''; }
+function cidContentType(cid){ return (REF[cid] && REF[cid]['Content Type']) || ''; }
+function cidTAContent(cid){ return (REF[cid] && REF[cid]['TA Content']) || ''; }
 
 function matchScope(rowMB, rowKenh, rowCID){
   const s = state.scope;
@@ -789,6 +792,9 @@ function cidUniverse(kenh){
     v.CVR = (v.Mess+v.Lead)>0? v.OrderCount/(v.Mess+v.Lead):0;
     v.MC = cidMC(v.CID) || 'Không xác định';
     v.Product = cidProduct(v.CID);
+    v.LinkVideo = cidLinkVideo(v.CID);
+    v.ContentType = cidContentType(v.CID);
+    v.TAContent = cidTAContent(v.CID);
   });
   return Object.values(map).filter(v => v.Spend>0 || v.Doanh_thu>0);
 }
@@ -858,6 +864,15 @@ function detailGridHtml(fields){
   return '<div class="detailGrid">' + fields.map(f=>`<div><div class="k">${f[0]}</div><div class="v">${f[1]}</div></div>`).join('') + '</div>';
 }
 
+function linkVideoHtml(url){
+  const u = String(url||'').trim();
+  if(!u) return 'No Link';
+  let short = u.replace(/^https?:\/\//,'').replace(/^www\./,'');
+  if(short.length>28) short = short.slice(0,28)+'…';
+  const href = u.match(/^https?:\/\//) ? u : ('https://'+u);
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color:rgb(88,124,255);text-decoration:none" title="${u.replace(/"/g,'&quot;')}">${short}</a>`;
+}
+
 function cidDetailBlockHtml(r){
   const orders = cidOrdersList(r.CID, r.MB);
   let ordersHtml = `<div class="subTable"><div class="title">Đơn hàng (${orders.length})</div>`;
@@ -872,7 +887,8 @@ function cidDetailBlockHtml(r){
     ['Spend', fmt(r.Spend)], ['Impressions', fmtN(r.Impressions)], ['Clicks', fmtN(r.Clicks)], ['Reach', fmtN(r.Reach)],
     ['CTR', fmtPct(r.CTR)], ['CPM', fmt(r.CPM)], ['CVR', fmtPct(r.CVR)], ['Mess/Lead', fmtN(r.Mess+r.Lead)],
     ['ThruPlay', fmtN(r.ThruPlay)], ['Video3sViews', fmtN(r.Video3s)], ['Hook Rate', fmtPct(r.HookRate)],
-    ['Doanh thu', fmt(r.Doanh_thu)], ['Đơn hàng', fmtN(r.OrderCount)], ['ROAS', fmtX(r.ROAS)], ['CIR', fmtPct(r.CIR)]
+    ['Doanh thu', fmt(r.Doanh_thu)], ['Đơn hàng', fmtN(r.OrderCount)], ['ROAS', fmtX(r.ROAS)], ['CIR', fmtPct(r.CIR)],
+    ['Content Type', r.ContentType||'-'], ['TA Content', r.TAContent||'-'], ['Link Video', linkVideoHtml(r.LinkVideo)]
   ]) + ordersHtml + `</div>`;
 }
 
