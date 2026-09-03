@@ -580,7 +580,7 @@ const MC_LIST = Array.from(new Set(Object.values(REF).map(r=>r['MC PIC']).filter
 if(!MC_LIST.includes('Không xác định')) MC_LIST.push('Không xác định');
 const PLATFORMS = ['Facebook (Mess)','Webcake (LDP)'];
 const PRODUCT_LIST = Array.from(new Set(Object.values(REF).map(r=>r['Sản phẩm']).filter(Boolean))).sort();
-const STATUS_LIST = ['Testing','Rất ngon','Đang ngon','Warning zone','Nguy hiểm','Cần xem xét'];
+const STATUS_LIST = ['Rất ngon','Đang ngon','Warning zone','Nguy hiểm','Cần xem xét','Trống'];
 const PAGE_SIZE = 12;
 
 function toDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); }
@@ -793,7 +793,7 @@ function cidDetailBlockHtml(r){
 }
 
 function cirBadge(cir, revenue, spend){
-  if((spend||0) < 1000000) return `<span class="badge-cir badge-cir-testing">Testing</span>`;
+  if((spend||0) <= 0 && (revenue||0) <= 0) return `<span class="badge-cir badge-cir-testing">Trống</span>`;
   const pct = (cir||0)*100;
   if((revenue||0)<=0 || pct===0) return `<span class="badge-cir badge-cir-neutral">Cần xem xét</span>`;
   if(pct < 35) return `<span class="badge-cir badge-cir-great">Rất ngon</span>`;
@@ -922,7 +922,7 @@ function renderSidebarSpendKpi(){
 }
 
 function cidStatusLabel(r){
-  if((r.Spend||0) < 1000000) return 'Testing';
+  if((r.Spend||0) <= 0 && (r.Doanh_thu||0) <= 0) return 'Trống';
   const pct = (r.CIR||0)*100;
   if((r.Doanh_thu||0)<=0 || pct===0) return 'Cần xem xét';
   if(pct < 35) return 'Rất ngon';
