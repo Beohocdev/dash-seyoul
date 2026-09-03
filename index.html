@@ -18,6 +18,18 @@
     --border-table: rgb(24,30,42);
     --bg-inset: rgb(12,16,24);
     --bg-elevated: rgb(19,24,35);
+    --kpi1-bg: rgba(88,124,255,0.14);  --kpi1-fg: rgb(150,175,255);
+    --kpi2-bg: rgba(74,222,128,0.14);  --kpi2-fg: rgb(120,220,150);
+    --kpi3-bg: rgba(168,139,250,0.14); --kpi3-fg: rgb(190,160,250);
+    --kpi4-bg: rgba(250,204,21,0.14);  --kpi4-fg: rgb(250,204,21);
+    --kpi5-bg: rgba(56,189,248,0.14);  --kpi5-fg: rgb(110,200,240);
+    --kpi6-bg: rgba(52,211,153,0.14);  --kpi6-fg: rgb(110,230,190);
+    --kpi7-bg: rgba(129,140,248,0.14); --kpi7-fg: rgb(170,178,250);
+    --kpi8-bg: rgba(244,114,182,0.14); --kpi8-fg: rgb(248,170,205);
+    --kpi9-bg: rgba(45,212,191,0.14);  --kpi9-fg: rgb(110,225,215);
+    --kpi10-bg: rgba(251,146,60,0.14); --kpi10-fg: rgb(250,180,120);
+    --kpi11-bg: rgba(96,165,250,0.14); --kpi11-fg: rgb(150,195,250);
+    --kpi12-bg: rgba(248,113,113,0.14);--kpi12-fg: rgb(248,150,150);
   }
   body.light-theme {
     --bg-page: rgb(244,246,250);
@@ -32,6 +44,18 @@
     --border-table: rgb(232,235,241);
     --bg-inset: rgb(238,240,245);
     --bg-elevated: rgb(248,249,252);
+    --kpi1-bg: rgba(37,71,201,0.16);  --kpi1-fg: rgb(29,55,158);
+    --kpi2-bg: rgba(21,128,61,0.16);  --kpi2-fg: rgb(15,101,48);
+    --kpi3-bg: rgba(109,40,217,0.16); --kpi3-fg: rgb(88,28,175);
+    --kpi4-bg: rgba(180,120,6,0.18);  --kpi4-fg: rgb(146,90,5);
+    --kpi5-bg: rgba(3,105,161,0.16);  --kpi5-fg: rgb(2,84,129);
+    --kpi6-bg: rgba(4,120,87,0.16);   --kpi6-fg: rgb(3,96,70);
+    --kpi7-bg: rgba(67,56,202,0.16);  --kpi7-fg: rgb(53,45,163);
+    --kpi8-bg: rgba(190,24,93,0.16);  --kpi8-fg: rgb(153,19,75);
+    --kpi9-bg: rgba(15,118,110,0.16); --kpi9-fg: rgb(12,94,88);
+    --kpi10-bg: rgba(194,65,12,0.16); --kpi10-fg: rgb(155,52,10);
+    --kpi11-bg: rgba(29,78,216,0.16); --kpi11-fg: rgb(23,62,173);
+    --kpi12-bg: rgba(185,28,28,0.16); --kpi12-fg: rgb(148,22,22);
   }
   .themeToggle { display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; font-size:14px; }
   .themeSwitch { width:40px; height:22px; border-radius:12px; background:var(--bg-input); border:1px solid var(--border-input); position:relative; transition:background .2s ease; flex-shrink:0; }
@@ -104,6 +128,18 @@
   .kpi-card { border-radius:12px; padding:14px; }
   .kpi-card .l { font-size:12px; margin:0 0 6px; opacity:.8; }
   .kpi-card .v { font-size:19px; font-weight:700; margin:0; }
+  .kpi-c1  { background:var(--kpi1-bg); }  .kpi-c1  .l, .kpi-c1  .v { color:var(--kpi1-fg); }
+  .kpi-c2  { background:var(--kpi2-bg); }  .kpi-c2  .l, .kpi-c2  .v { color:var(--kpi2-fg); }
+  .kpi-c3  { background:var(--kpi3-bg); }  .kpi-c3  .l, .kpi-c3  .v { color:var(--kpi3-fg); }
+  .kpi-c4  { background:var(--kpi4-bg); }  .kpi-c4  .l, .kpi-c4  .v { color:var(--kpi4-fg); }
+  .kpi-c5  { background:var(--kpi5-bg); }  .kpi-c5  .l, .kpi-c5  .v { color:var(--kpi5-fg); }
+  .kpi-c6  { background:var(--kpi6-bg); }  .kpi-c6  .l, .kpi-c6  .v { color:var(--kpi6-fg); }
+  .kpi-c7  { background:var(--kpi7-bg); }  .kpi-c7  .l, .kpi-c7  .v { color:var(--kpi7-fg); }
+  .kpi-c8  { background:var(--kpi8-bg); }  .kpi-c8  .l, .kpi-c8  .v { color:var(--kpi8-fg); }
+  .kpi-c9  { background:var(--kpi9-bg); }  .kpi-c9  .l, .kpi-c9  .v { color:var(--kpi9-fg); }
+  .kpi-c10 { background:var(--kpi10-bg); } .kpi-c10 .l, .kpi-c10 .v { color:var(--kpi10-fg); }
+  .kpi-c11 { background:var(--kpi11-bg); } .kpi-c11 .l, .kpi-c11 .v { color:var(--kpi11-fg); }
+  .kpi-c12 { background:var(--kpi12-bg); } .kpi-c12 .l, .kpi-c12 .v { color:var(--kpi12-fg); }
   .panel { background:var(--bg-panel); border:1px solid var(--border-panel); border-radius:12px; padding:16px; margin-bottom:20px; }
   .panel h3 { font-size:14px; font-weight:600; margin:0 0 12px; }
   .split { display:flex; gap:20px; }
@@ -415,11 +451,16 @@
     themeToggle.addEventListener('click', function(){
       document.body.classList.toggle('light-theme');
       localStorage.setItem('seyoul_theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
-      if(window.Chart){
-        Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
-        Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue('--border-table').trim();
-      }
-      if(typeof renderAll === 'function') renderAll();
+      // Force style recalculation to commit before we read CSS vars / re-render,
+      // so the toggle never picks up a stale class/style state.
+      void document.body.offsetHeight;
+      requestAnimationFrame(function(){
+        if(window.Chart){
+          Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+          Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue('--border-table').trim();
+        }
+        if(typeof renderAll === 'function') renderAll();
+      });
     });
   }
 })();
@@ -693,40 +734,38 @@ function renderKPI(){
   const cir = ord.Doanh_thu_matched>0? ads.Spend/ord.Doanh_thu_matched:0;
   const cvr = (ads.Mess+ads.Lead)>0? ord.MatchedOrderCount/(ads.Mess+ads.Lead):0;
   const aov = ord.OrderCount>0? ord.Doanh_thu/ord.OrderCount:0;
-  const isLight = document.body.classList.contains('light-theme');
-  const cards = isLight ? [
-    ['Chi phí (Ads)', fmt(ads.Spend), 'rgba(37,71,201,0.16)','rgb(29,55,158)'],
-    ['Doanh thu (quy CID)', fmt(ord.Doanh_thu_matched), 'rgba(21,128,61,0.16)','rgb(15,101,48)'],
-    ['ROAS', fmtX(roas), 'rgba(109,40,217,0.16)','rgb(88,28,175)'],
-    ['CIR', fmtPct(cir), 'rgba(180,120,6,0.18)','rgb(146,90,5)'],
-    ['CPM', fmt(ads.CPM), 'rgba(3,105,161,0.16)','rgb(2,84,129)'],
-    ['CVR', fmtPct(cvr), 'rgba(4,120,87,0.16)','rgb(3,96,70)'],
-    ['Đơn hàng', fmtN(ord.OrderCount), 'rgba(67,56,202,0.16)','rgb(53,45,163)'],
-    ['AOV (giá trị TB/đơn)', fmt(aov), 'rgba(190,24,93,0.16)','rgb(153,19,75)'],
-    ['Doanh thu tổng (mọi trạng thái)', fmt(ord.Doanh_thu), 'rgba(15,118,110,0.16)','rgb(12,94,88)'],
-    ['Doanh thu Mess', fmt(ord.Doanh_thu_Mess), 'rgba(194,65,12,0.16)','rgb(155,52,10)'],
-    ['Doanh thu Webcake (LDP)', fmt(ord.Doanh_thu_LDP), 'rgba(29,78,216,0.16)','rgb(23,62,173)'],
-    ['Doanh thu chưa gắn CID', fmt(ord.Doanh_thu_unident), 'rgba(185,28,28,0.16)','rgb(148,22,22)'],
-  ] : [
-    ['Chi phí (Ads)', fmt(ads.Spend), 'rgba(88,124,255,0.14)','rgb(150,175,255)'],
-    ['Doanh thu (quy CID)', fmt(ord.Doanh_thu_matched), 'rgba(74,222,128,0.14)','rgb(120,220,150)'],
-    ['ROAS', fmtX(roas), 'rgba(168,139,250,0.14)','rgb(190,160,250)'],
-    ['CIR', fmtPct(cir), 'rgba(250,204,21,0.14)','rgb(250,204,21)'],
-    ['CPM', fmt(ads.CPM), 'rgba(56,189,248,0.14)','rgb(110,200,240)'],
-    ['CVR', fmtPct(cvr), 'rgba(52,211,153,0.14)','rgb(110,230,190)'],
-    ['Đơn hàng', fmtN(ord.OrderCount), 'rgba(129,140,248,0.14)','rgb(170,178,250)'],
-    ['AOV (giá trị TB/đơn)', fmt(aov), 'rgba(244,114,182,0.14)','rgb(248,170,205)'],
-    ['Doanh thu tổng (mọi trạng thái)', fmt(ord.Doanh_thu), 'rgba(45,212,191,0.14)','rgb(110,225,215)'],
-    ['Doanh thu Mess', fmt(ord.Doanh_thu_Mess), 'rgba(251,146,60,0.14)','rgb(250,180,120)'],
-    ['Doanh thu Webcake (LDP)', fmt(ord.Doanh_thu_LDP), 'rgba(96,165,250,0.14)','rgb(150,195,250)'],
-    ['Doanh thu chưa gắn CID', fmt(ord.Doanh_thu_unident), 'rgba(248,113,113,0.14)','rgb(248,150,150)'],
+  const cards = [
+    ['Chi phí (Ads)', fmt(ads.Spend), 'kpi-c1'],
+    ['Doanh thu (quy CID)', fmt(ord.Doanh_thu_matched), 'kpi-c2'],
+    ['ROAS', fmtX(roas), 'kpi-c3'],
+    ['CIR', fmtPct(cir), 'kpi-c4'],
+    ['CPM', fmt(ads.CPM), 'kpi-c5'],
+    ['CVR', fmtPct(cvr), 'kpi-c6'],
+    ['Đơn hàng', fmtN(ord.OrderCount), 'kpi-c7'],
+    ['AOV (giá trị TB/đơn)', fmt(aov), 'kpi-c8'],
+    ['Doanh thu tổng (mọi trạng thái)', fmt(ord.Doanh_thu), 'kpi-c9'],
+    ['Doanh thu Mess', fmt(ord.Doanh_thu_Mess), 'kpi-c10'],
+    ['Doanh thu Webcake (LDP)', fmt(ord.Doanh_thu_LDP), 'kpi-c11'],
+    ['Doanh thu chưa gắn CID', fmt(ord.Doanh_thu_unident), 'kpi-c12'],
   ];
+  // Colors now come purely from CSS (var(--kpiN-bg/fg), switched instantly by
+  // the body.light-theme class) — no JS color branching, so there is nothing
+  // to "catch up" on re-render; toggling the theme class alone repaints these.
   document.getElementById('kpiGrid').innerHTML = cards.map(c=>
-    `<div class="kpi-card" style="background:${c[2]}"><p class="l" style="color:${c[3]}">${c[0]}</p><p class="v" style="color:${c[3]}">${c[1]}</p></div>`
+    `<div class="kpi-card ${c[2]}"><p class="l">${c[0]}</p><p class="v">${c[1]}</p></div>`
   ).join('');
 }
 
 let revChart, topCidChart, mbChart;
+
+function chartThemeColors(){
+  // Read fresh from CSS vars every time a chart is (re)built, instead of
+  // relying on a global Chart.defaults value set elsewhere — this guarantees
+  // gridlines/ticks always match the CURRENT theme the instant renderAll()
+  // runs, with no dependency on toggle-handler timing.
+  const cs = getComputedStyle(document.body);
+  return { text: cs.getPropertyValue('--text-muted').trim(), grid: cs.getPropertyValue('--border-table').trim() };
+}
 
 function renderRevChart(){
   const ads = getFilteredAds(), ord = getFilteredOrders();
@@ -735,6 +774,7 @@ function renderRevChart(){
   ads.forEach(r=>{ costByDate[r.date]=(costByDate[r.date]||0)+r.Spend; });
   ord.forEach(r=>{ if(r.status==='matched') revByDate[r.date]=(revByDate[r.date]||0)+r.Revenue; });
   if(revChart) revChart.destroy();
+  const tc1 = chartThemeColors();
   revChart = new Chart(document.getElementById('revChart'), {
     type:'line',
     data:{ labels:dates.map(d=>d.slice(5)),
@@ -742,7 +782,13 @@ function renderRevChart(){
         { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(88,124,255)', backgroundColor:'rgba(88,124,255,0.12)', fill:true, tension:0.3, pointRadius:2 },
         { label:'Doanh thu (quy CID)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(74,222,128)', backgroundColor:'rgba(74,222,128,0.12)', fill:true, tension:0.3, pointRadius:2 }
       ]},
-    options:{ responsive:true, maintainAspectRatio:false }
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:tc1.text } } },
+      scales:{
+        x:{ ticks:{ color:tc1.text }, grid:{ color:tc1.grid }, border:{ color:tc1.grid } },
+        y:{ ticks:{ color:tc1.text }, grid:{ color:tc1.grid }, border:{ color:tc1.grid } }
+      }
+    }
   });
 }
 
@@ -782,10 +828,16 @@ function renderTopCid(){
   const metric = document.getElementById('cidMetric').value;
   const rows = cidUniverse().sort((a,b)=>b[metric]-a[metric]).slice(0,10);
   if(topCidChart) topCidChart.destroy();
+  const tc2 = chartThemeColors();
   topCidChart = new Chart(document.getElementById('topCidChart'), {
     type:'bar',
     data:{ labels:rows.map(r=>r.CID), datasets:[{ data:rows.map(r=>Math.round(r[metric])), backgroundColor:'rgb(88,124,255)', borderRadius:4 }] },
-    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ ticks:{ color:tc2.text }, grid:{ color:tc2.grid }, border:{ color:tc2.grid } },
+        y:{ ticks:{ color:tc2.text }, grid:{ color:tc2.grid }, border:{ color:tc2.grid } }
+      }
+    }
   });
 }
 document.getElementById('cidMetric').addEventListener('change', renderTopCid);
@@ -806,13 +858,20 @@ function mbBreakdown(){
 function renderMbChart(){
   const rows = mbBreakdown();
   if(mbChart) mbChart.destroy();
+  const tc3 = chartThemeColors();
   mbChart = new Chart(document.getElementById('mbChart'), {
     type:'bar',
     data:{ labels:rows.map(m=>m.MB), datasets:[
       { label:'Chi phí', data:rows.map(m=>Math.round(m.Spend)), backgroundColor:'rgb(88,124,255)', borderRadius:4 },
       { label:'Doanh thu', data:rows.map(m=>Math.round(m.Doanh_thu_matched)), backgroundColor:'rgb(74,222,128)', borderRadius:4 }
     ]},
-    options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ autoSkip:false, maxRotation:20, minRotation:0 } } } }
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:tc3.text } } },
+      scales:{
+        x:{ ticks:{ autoSkip:false, maxRotation:20, minRotation:0, color:tc3.text }, grid:{ color:tc3.grid }, border:{ color:tc3.grid } },
+        y:{ ticks:{ color:tc3.text }, grid:{ color:tc3.grid }, border:{ color:tc3.grid } }
+      }
+    }
   });
   document.getElementById('mbRoasLabels').innerHTML = rows.map(m=>`<span class="${roasClass(m.ROAS)}">${m.MB}: ROAS ${fmtX(m.ROAS)}</span>`).join('');
 }
