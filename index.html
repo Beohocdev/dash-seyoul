@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard tổng - SEYOUL</title>
+<style>
+  * { box-sizing: border-box; outline:none; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:rgb(10,13,20); color:rgb(228,231,238); font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
+  .header { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:14px 20px; border-bottom:1px solid rgb(30,36,48); flex-wrap:wrap; gap:10px; }
+  .header .title { font-size:26px; font-weight:700; display:flex; align-items:center; gap:10px; justify-content:center; grid-column:2; text-align:center; }
+  .header .titleSub { font-size:14px; font-weight:400; color:rgb(148,157,176); margin-left:8px; }
+  .header .right { display:flex; align-items:center; gap:12px; font-size:13px; color:rgb(148,157,176); position:relative; grid-column:3; justify-content:flex-end; }
+  .clock { font-variant-numeric:tabular-nums; color:rgb(180,190,210); font-size:13px; }
+  .dateBtn { background:rgb(22,27,38); color:rgb(228,231,238); border:1px solid rgb(40,47,63); border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .dateMenu { position:absolute; top:40px; right:0; background:rgb(19,24,35); border:1px solid rgb(40,47,63); border-radius:10px; width:230px; padding:6px; z-index:20; display:none; }
+  .dateMenu.open { display:block; }
+  .dateItem { padding:9px 12px; border-radius:7px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; }
+  .dateItem:hover { background:rgb(28,34,48); }
+  .dateItem.active { background:rgb(37,71,201); color:#fff; }
+  .calendarBox { position:absolute; top:40px; right:0; background:rgb(19,24,35); border:1px solid rgb(40,47,63); border-radius:10px; padding:16px; z-index:21; display:none; }
+  .calendarBox.open { display:flex; gap:24px; }
+  .calMonth { width:220px; }
+  .calHead { display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:10px; }
+  .calGrid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:12px; text-align:center; }
+  .calGrid .dow { color:rgb(120,128,145); padding:4px 0; }
+  .calGrid .day { padding:6px 0; border-radius:6px; cursor:pointer; color:rgb(228,231,238); }
+  .calGrid .day:hover { background:rgb(32,39,54); }
+  .calGrid .day.sel { background:rgb(37,71,201); color:#fff; }
+  .calGrid .day.inrange { background:rgba(37,71,201,0.35); }
+  .navBtn { background:none; border:none; color:rgb(148,157,176); cursor:pointer; font-size:14px; }
+  .calFoot { display:flex; justify-content:flex-end; margin-top:10px; }
+  .applyBtn { background:rgb(37,71,201); color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; cursor:pointer; }
+  .layout { display:flex; }
+  .sidebar { width:210px; flex-shrink:0; background:rgb(13,17,26); border-right:1px solid rgb(30,36,48); padding:16px 10px; transition:width .2s ease; overflow:hidden; }
+  .sidebar.collapsed { width:0; padding-left:0; padding-right:0; border-right:none; }
+  .sidebar p.label { font-size:11px; color:rgb(110,118,135); text-transform:uppercase; margin:14px 6px 6px; white-space:nowrap; }
+  .sbitem { padding:9px 10px; border-radius:8px; font-size:13px; cursor:pointer; margin-bottom:2px; white-space:nowrap; user-select:none; }
+  .sbitem:hover { background:rgb(24,30,42); }
+  .sbitem.active { background:rgb(37,71,201); color:#fff; }
+  .toggleBtn { width:22px; height:44px; background:rgb(22,27,38); border:1px solid rgb(40,47,63); border-radius:0 8px 8px 0; color:rgb(148,157,176); cursor:pointer; align-self:flex-start; margin-top:20px; flex-shrink:0; }
+  .main { flex:1; min-width:0; padding:20px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+  .kpi-card { border-radius:12px; padding:14px; }
+  .kpi-card .l { font-size:12px; margin:0 0 6px; opacity:.8; }
+  .kpi-card .v { font-size:19px; font-weight:700; margin:0; }
+  .panel { background:rgb(17,22,32); border:1px solid rgb(28,34,47); border-radius:12px; padding:16px; margin-bottom:20px; }
+  .panel h3 { font-size:14px; font-weight:600; margin:0 0 12px; }
+  .split { display:flex; gap:20px; }
+  .split > div { flex:1; min-width:0; }
+  .filters { display:flex; gap:8px; margin-bottom:10px; }
+  select { background:rgb(22,27,38); color:rgb(228,231,238); border:1px solid rgb(40,47,63); border-radius:6px; padding:6px 10px; font-size:13px; }
+  .tabs { display:flex; gap:24px; border-bottom:1px solid rgb(30,36,48); margin-bottom:16px; position:relative; }
+  .tab { padding:0 0 10px; font-size:14px; color:rgb(148,157,176); cursor:pointer; user-select:none; white-space:nowrap; }
+  .tab.active { color:#fff; font-weight:600; }
+  .tabUnderline { position:absolute; bottom:-1px; height:3px; background:rgb(88,124,255); border-radius:2px; transition:left .2s ease, width .2s ease; display:none; }
+  .subtabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .subtab { padding:6px 14px; border-radius:20px; font-size:12px; cursor:pointer; background:rgb(22,27,38); color:rgb(180,190,205); border:1px solid rgb(40,47,63); user-select:none; }
+  .subtab.active { background:rgb(37,71,201); color:#fff; border-color:rgb(37,71,201); }
+  .boardHeaderRow { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:2px; }
+  .boardFilter { display:flex; align-items:center; gap:8px; font-size:12px; color:rgb(180,190,205); margin-bottom:14px; white-space:nowrap; }
+  .boardFilter select { background:rgb(22,27,38); color:#fff; border:1px solid rgb(40,47,63); border-radius:8px; padding:6px 10px; font-size:12px; }
+  .badge-warn { background:rgba(248,113,113,0.16); color:rgb(248,150,150); border:1px solid rgba(248,113,113,0.4); border-radius:12px; padding:2px 8px; font-size:11px; white-space:nowrap; }
+  .badge-cir { border-radius:12px; padding:2px 8px; font-size:11px; white-space:nowrap; border:1px solid transparent; }
+  .badge-cir-great { background:rgba(22,163,74,0.18); color:rgb(74,222,128); border-color:rgba(22,163,74,0.45); }
+  .badge-cir-good { background:rgba(59,130,246,0.16); color:rgb(96,165,250); border-color:rgba(59,130,246,0.4); }
+  .badge-cir-warn { background:rgba(234,179,8,0.16); color:rgb(250,204,21); border-color:rgba(234,179,8,0.4); }
+  .badge-cir-bad { background:rgba(248,113,113,0.16); color:rgb(248,150,150); border-color:rgba(248,113,113,0.4); }
+  .badge-cir-neutral { background:rgba(148,157,176,0.16); color:rgb(180,188,204); border-color:rgba(148,157,176,0.4); }
+  .badge-cir-testing { background:rgba(168,85,247,0.16); color:rgb(196,155,250); border-color:rgba(168,85,247,0.4); font-style:italic; }
+  .searchWrap { position:relative; display:inline-flex; align-items:center; }
+  .searchIconBtn { background:none; border:1px solid rgb(48,56,72); color:rgb(148,157,176); border-radius:8px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; }
+  .searchIconBtn:hover { color:#fff; border-color:rgb(88,124,255); }
+  .searchInput { width:0; opacity:0; padding:0; border:1px solid rgb(48,56,72); background:rgb(15,19,28); color:#fff; border-radius:8px; font-size:12px; margin-left:0; transition:width .18s ease, opacity .18s ease, padding .18s ease, margin-left .18s ease; }
+  .searchInput.open { width:180px; opacity:1; padding:6px 10px; margin-left:6px; }
+  .pagBar { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:12px; }
+  .pagBtn { background:rgb(22,27,38); color:#fff; border:1px solid rgb(40,47,63); border-radius:8px; padding:6px 14px; font-size:12px; cursor:pointer; }
+  .pagBtn:disabled { opacity:0.4; cursor:not-allowed; }
+  .pagInfo { font-size:12px; color:rgb(148,157,176); }
+  .sidebarRange { display:flex; gap:6px; padding:0 6px 10px; }
+  .sidebarRange input { width:50%; background:rgb(22,27,38); color:#fff; border:1px solid rgb(40,47,63); border-radius:6px; padding:6px 8px; font-size:12px; }
+  .sidebarKpiSmall { margin:0 6px 12px; padding:10px; border-radius:10px; background:rgba(88,124,255,0.14); }
+  .sidebarKpiSmall .l { font-size:11px; color:rgb(150,175,255); margin:0 0 4px; }
+  .sidebarKpiSmall .v { font-size:20px; font-weight:700; color:#fff; margin:0; }
+  .boardTitle { font-size:15px; font-weight:700; margin:0 0 12px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  td { padding:8px 6px; border-bottom:1px solid rgb(24,30,42); white-space:nowrap; }
+  .muted { color:rgb(148,157,176); font-size:12px; text-transform:uppercase; }
+  .good { color:rgb(74,222,128); }
+  .bad { color:rgb(248,113,113); }
+  .warn { color:rgb(250,204,21); }
+  .rowClick { cursor:pointer; user-select:none; }
+  .rowClick:hover { background:rgb(22,27,38); }
+  .detailGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px 16px; background:rgb(12,16,24); border-radius:8px; padding:14px; margin:4px 0 4px; }
+  .detailGrid div .k { font-size:11px; color:rgb(120,128,145); margin-bottom:3px; white-space:nowrap; }
+  .detailGrid div .v { font-size:13px; font-weight:600; word-break:break-word; }
+  .chev { display:inline-block; width:14px; color:rgb(120,128,145); }
+  .tableWrap { overflow-x:auto; }
+  .subTable { font-size:12px; margin:0 0 10px; background:rgb(12,16,24); border-radius:8px; padding:8px 12px; }
+  .subTable .title { font-size:11px; text-transform:uppercase; color:rgb(120,128,145); margin-bottom:6px; }
+  .miniList { max-height:220px; overflow-y:auto; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">
+    <span style="display:inline-flex;align-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 15a5 5 0 0 1 10 0"></path><path d="M12 15l2.2-2.6"></path><line x1="6" y1="9" x2="6.6" y2="9.6"></line><line x1="18" y1="9" x2="17.4" y2="9.6"></line><line x1="12" y1="7.5" x2="12" y2="8.3"></line><line x1="16" y1="6" x2="15" y2="7"></line><line x1="8" y1="6" x2="9" y2="7"></line><rect x="15.5" y="6" width="4.5" height="1.4" rx="0.5"></rect><circle cx="21" cy="9" r="0.6" fill="currentColor" stroke="none"></circle><rect x="4" y="16.5" width="1.4" height="2" fill="currentColor" stroke="none"></rect><rect x="6" y="15" width="1.4" height="3.5" fill="currentColor" stroke="none"></rect><rect x="8" y="14" width="1.4" height="4.5" fill="currentColor" stroke="none"></rect></svg></span> Dashboard Performance - Seyoul SG
+    <span class="titleSub" id="scopeLabel">Tổng</span>
+  </div>
+  <div class="right">
+    <span class="clock" id="clockBox">--/--/---- --:--:--</span>
+    <div style="position:relative">
+      <div class="dateBtn" id="dateBtnToggle">Hôm nay <span>&#9662;</span></div>
+      <div class="dateMenu" id="dateMenu">
+        <div class="dateItem active" data-v="today">Hôm nay <span>&#10003;</span></div>
+        <div class="dateItem" data-v="yesterday">Hôm qua</div>
+        <div class="dateItem" data-v="3d">3 ngày trước</div>
+        <div class="dateItem" data-v="7d">7 ngày trước</div>
+        <div class="dateItem" data-v="lastweek">Tuần trước</div>
+        <div class="dateItem" data-v="3d_today">3 ngày trước & hôm nay</div>
+        <div class="dateItem" data-v="7d_today">7 ngày trước & hôm nay</div>
+        <div class="dateItem" data-v="thisweek">Tuần này</div>
+        <div class="dateItem" data-v="thismonth">Tháng này</div>
+        <div class="dateItem" data-v="lastmonth">Tháng trước</div>
+        <div class="dateItem" data-v="custom">Tùy chỉnh</div>
+      </div>
+      <div class="calendarBox" id="calendarBox"></div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar collapsed" id="sidebar">
+    <p class="label">Nguồn dữ liệu</p>
+    <div class="sbitem active" data-type="all" data-value="">Tổng</div>
+    <div class="sbitem" data-type="source" data-value="Facebook (Mess)">Tổng Mess</div>
+    <div class="sbitem" data-type="source" data-value="Webcake (LDP)">Tổng LDP</div>
+    <p class="label">Media Buyer</p>
+    <div class="sbitem" data-type="mb" data-value="Hoàng Nguyễn Phương Duy">Hoàng Nguyễn Phương Duy</div>
+    <div class="sbitem" data-type="mb" data-value="Tạ Văn Bản">Tạ Văn Bản</div>
+    <div class="sbitem" data-type="mb" data-value="Nguyễn Khánh Huyền">Nguyễn Khánh Huyền</div>
+    <p class="label">MC</p>
+    <div class="sbitem" data-type="mc" data-value="Đặng Trần Tú Uyên">Đặng Trần Tú Uyên</div>
+    <div class="sbitem" data-type="mc" data-value="Nguyễn Thị Mến Yêu">Nguyễn Thị Mến Yêu</div>
+    <p class="label">Lọc theo ROAS</p>
+    <div class="sidebarRange">
+      <input type="number" step="0.1" id="roasMin" placeholder="Min">
+      <input type="number" step="0.1" id="roasMax" placeholder="Max">
+    </div>
+    <p class="label">Lọc theo Doanh thu (VND)</p>
+    <div class="sidebarRange">
+      <input type="number" step="1000" id="revMin" placeholder="Min">
+      <input type="number" step="1000" id="revMax" placeholder="Max">
+    </div>
+    <p class="label">CID chi tiêu &gt; 3.000.000đ</p>
+    <div class="sidebarKpiSmall">
+      <p class="l">Tổng số CID (trong phạm vi ngày đang lọc)</p>
+      <p class="v" id="sidebarSpendKpi">0</p>
+    </div>
+
+    <p class="label">Trạng thái CID</p>
+    <div style="position:relative;width:100%;height:180px"><canvas id="pieStatus"></canvas></div>
+
+    <p class="label">Doanh thu CID theo MC</p>
+    <div style="position:relative;width:100%;height:180px"><canvas id="pieRevByMc"></canvas></div>
+
+    <p class="label">Doanh thu theo MB</p>
+    <div style="position:relative;width:100%;height:180px"><canvas id="pieRevByMb"></canvas></div>
+
+    <p class="label">ROAS theo MB</p>
+    <div style="position:relative;width:100%;height:180px"><canvas id="pieRoasByMb"></canvas></div>
+
+    <p class="label">Doanh thu theo Sản phẩm</p>
+    <div style="position:relative;width:100%;height:180px"><canvas id="pieRevByProduct"></canvas></div>
+  </div>
+  <button class="toggleBtn" id="toggleSidebar">&#8250;</button>
+
+  <div class="main">
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div class="panel">
+      <h3>Doanh thu theo thời gian (theo phạm vi lọc hiện tại)</h3>
+      <div style="position:relative;width:100%;height:260px"><canvas id="revChart"></canvas></div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3>Top CID</h3>
+          <div class="filters">
+            <select id="cidMetric"><option value="Doanh_thu">Doanh thu</option><option value="ROAS">ROAS</option><option value="Chi_phi">Chi phí</option></select>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:240px"><canvas id="topCidChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>So sánh hiệu suất Media Buyer</h3>
+        <div style="position:relative;width:100%;height:220px"><canvas id="mbChart"></canvas></div>
+        <div style="display:flex;gap:12px;font-size:12px;color:rgb(148,157,176);margin-top:10px;flex-wrap:wrap" id="mbRoasLabels"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 class="boardTitle">Thống kê theo Media Buyer</h3>
+      <div class="boardHeaderRow">
+        <div class="tabs" id="boardA-tabs" style="border-bottom:none;margin-bottom:0">
+          <span class="tabUnderline" id="boardA-underline"></span>
+        </div>
+        <div class="boardFilter">
+          <span class="searchWrap">
+            <button type="button" class="searchIconBtn" id="boardA-searchBtn" title="Tìm theo CID">🔍</button>
+            <input type="text" class="searchInput" id="boardA-searchInput" placeholder="Nhập/dán CID...">
+          </span>
+          <span>Lọc theo MC:</span>
+          <select id="boardA-mcFilter"></select>
+          <span>Lọc theo trạng thái:</span>
+          <select id="boardA-statusFilter"></select>
+        </div>
+      </div>
+      <div class="tableWrap"><table><tbody id="boardA-body"></tbody></table></div>
+      <div id="boardA-pag"></div>
+    </div>
+
+    <div class="panel">
+      <h3 class="boardTitle">Thống kê theo Media Creator</h3>
+      <div class="boardHeaderRow">
+        <div class="tabs" id="boardB-tabs" style="border-bottom:none;margin-bottom:0">
+          <span class="tabUnderline" id="boardB-underline"></span>
+        </div>
+        <div class="boardFilter">
+          <span class="searchWrap">
+            <button type="button" class="searchIconBtn" id="boardB-searchBtn" title="Tìm theo CID">🔍</button>
+            <input type="text" class="searchInput" id="boardB-searchInput" placeholder="Nhập/dán CID...">
+          </span>
+          <span>Lọc theo nền tảng:</span>
+          <select id="boardB-platformFilter"></select>
+          <span>Lọc theo trạng thái:</span>
+          <select id="boardB-statusFilter"></select>
+        </div>
+      </div>
+      <div class="tableWrap"><table><tbody id="boardB-body"></tbody></table></div>
+      <div id="boardB-pag"></div>
+    </div>
+
+    <div class="panel">
+      <h3 class="boardTitle">Thống kê theo Nền tảng</h3>
+      <div class="boardHeaderRow">
+        <div class="tabs" id="boardC-tabs" style="border-bottom:none;margin-bottom:0">
+          <span class="tabUnderline" id="boardC-underline"></span>
+        </div>
+        <div class="boardFilter">
+          <span class="searchWrap">
+            <button type="button" class="searchIconBtn" id="boardC-searchBtn" title="Tìm theo CID">🔍</button>
+            <input type="text" class="searchInput" id="boardC-searchInput" placeholder="Nhập/dán CID...">
+          </span>
+          <span>Lọc theo MB:</span>
+          <select id="boardC-mbFilter"></select>
+          <span>Lọc theo MC:</span>
+          <select id="boardC-mcFilter"></select>
+          <span>Lọc theo trạng thái:</span>
+          <select id="boardC-statusFilter"></select>
+        </div>
+      </div>
+      <div class="tableWrap"><table><tbody id="boardC-body"></tbody></table></div>
+      <div id="boardC-pag"></div>
+    </div>
+
+    <div class="panel">
+      <h3 class="boardTitle">Thống kê theo Sản phẩm</h3>
+      <div class="boardHeaderRow">
+        <div class="tabs" id="boardD-tabs" style="border-bottom:none;margin-bottom:0">
+          <span class="tabUnderline" id="boardD-underline"></span>
+        </div>
+        <div class="boardFilter">
+          <span class="searchWrap">
+            <button type="button" class="searchIconBtn" id="boardD-searchBtn" title="Tìm theo CID">🔍</button>
+            <input type="text" class="searchInput" id="boardD-searchInput" placeholder="Nhập/dán CID...">
+          </span>
+          <span>Lọc theo MB:</span>
+          <select id="boardD-mbFilter"></select>
+          <span>Lọc theo MC:</span>
+          <select id="boardD-mcFilter"></select>
+          <span>Lọc theo trạng thái:</span>
+          <select id="boardD-statusFilter"></select>
+        </div>
+      </div>
+      <div class="tableWrap"><table><tbody id="boardD-body"></tbody></table></div>
+      <div id="boardD-pag"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(async function(){
+const API_URL = 'https://script.google.com/macros/s/AKfycbzQoWGB2ieM4-KfNXN-bTbH1S7fYqK9tGt2PdjxnaVwvW79ZDYhTAfogSXWF1prog/exec';
+const params = new URLSearchParams(location.search);
+let VIEWER_EMAIL = (params.get('email') || localStorage.getItem('seyoul_viewer_email') || '').trim();
+if(!VIEWER_EMAIL){ VIEWER_EMAIL = (prompt('Nhập email đăng nhập của bạn (@tvhs.asia):') || '').trim(); }
+if(VIEWER_EMAIL) localStorage.setItem('seyoul_viewer_email', VIEWER_EMAIL);
+
+document.body.insertAdjacentHTML('afterbegin', '<div id="loadingOverlay" style="position:fixed;inset:0;background:rgb(10,13,20);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;z-index:9999">Đang tải dữ liệu...</div>');
+
+let DATA = { ads_daily:[], orders_all:[], ref_map:{}, meta:{role:'denied'} };
+try {
+  const resp = await fetch(API_URL + '?email=' + encodeURIComponent(VIEWER_EMAIL), { cache:'no-store' });
+  DATA = await resp.json();
+} catch(err) {
+  document.getElementById('loadingOverlay').innerHTML = 'Không tải được dữ liệu. Kiểm tra kết nối hoặc URL API. (' + err.message + ')';
+  return;
+}
+
+if(!DATA.meta || DATA.meta.role === 'denied'){
+  document.getElementById('loadingOverlay').innerHTML = '<div style="text-align:center"><div style="font-size:20px;font-weight:600;margin-bottom:8px">Không có quyền truy cập</div><div style="color:rgb(148,157,176)">Email <b>'+ (VIEWER_EMAIL||'(trống)') +'</b> chưa được cấp quyền xem dashboard này.<br>Liên hệ Admin để được thêm vào danh sách.</div></div>';
+  return;
+}
+
+document.getElementById('loadingOverlay').remove();
+
+const ADS = DATA.ads_daily;
+const ORDERS = DATA.orders_all;
+const REF = DATA.ref_map;
+const MB_LIST = ['Hoàng Nguyễn Phương Duy','Tạ Văn Bản','Nguyễn Khánh Huyền'];
+const MC_LIST = Array.from(new Set(Object.values(REF).map(r=>r['MC PIC']).filter(Boolean)));
+if(!MC_LIST.includes('Không xác định')) MC_LIST.push('Không xác định');
+const PLATFORMS = ['Facebook (Mess)','Webcake (LDP)'];
+const PRODUCT_LIST = Array.from(new Set(Object.values(REF).map(r=>r['Sản phẩm']).filter(Boolean))).sort();
+const STATUS_LIST = ['Testing','Rất ngon','Đang ngon','Warning zone','Nguy hiểm','Cần xem xét'];
+const PAGE_SIZE = 12;
+
+function toDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); }
+function addDays(d,n){ const r=new Date(d); r.setUTCDate(r.getUTCDate()+n); return r; }
+
+let allDates = Array.from(new Set([...ADS.map(r=>r.date), ...ORDERS.map(r=>r.date)])).sort();
+const MAX_DATE = toDate(allDates[allDates.length-1]);
+
+let state = { start: MAX_DATE, end: MAX_DATE, scope: {type:'all', value:''}, presetLabel:'Hôm nay' };
+let boardA = { mb: 'all', mc: 'all', status: 'all', page: 1, search: '' };
+let boardB = { mc: 'all', platform: 'all', status: 'all', page: 1, search: '' };
+let boardC = { kenh: 'all', mb: 'all', mc: 'all', status: 'all', page: 1, search: '' };
+let boardD = { product: 'all', mb: 'all', mc: 'all', status: 'all', page: 1, search: '' };
+
+function computeRange(preset){
+  const d = MAX_DATE;
+  const dow = d.getUTCDay();
+  const mondayOffset = (dow===0? -6: 1-dow);
+  switch(preset){
+    case 'today': return [d,d];
+    case 'yesterday': return [addDays(d,-1), addDays(d,-1)];
+    case '3d': return [addDays(d,-3), addDays(d,-1)];
+    case '7d': return [addDays(d,-7), addDays(d,-1)];
+    case '3d_today': return [addDays(d,-2), d];
+    case '7d_today': return [addDays(d,-6), d];
+    case 'thisweek': { const mon = addDays(d, mondayOffset); return [mon, d]; }
+    case 'lastweek': { const mon = addDays(d, mondayOffset-7); const sun = addDays(mon,6); return [mon, sun]; }
+    case 'thismonth': { const first = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)); return [first, d]; }
+    case 'lastmonth': { const first = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth()-1, 1)); const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 0)); return [first, last]; }
+    default: return [d,d];
+  }
+}
+
+function inRange(dateStr, start, end){ const t = toDate(dateStr).getTime(); return t>=start.getTime() && t<=end.getTime(); }
+function cidMC(cid){ return (REF[cid] && REF[cid]['MC PIC']) || null; }
+function cidProduct(cid){ return (REF[cid] && REF[cid]['Sản phẩm']) || ''; }
+
+function matchScope(rowMB, rowKenh, rowCID){
+  const s = state.scope;
+  if(s.type==='all') return true;
+  if(s.type==='source') return rowKenh===s.value;
+  if(s.type==='mb') return rowMB===s.value;
+  if(s.type==='mc') return rowCID && cidMC(rowCID)===s.value;
+  return true;
+}
+function getFilteredAds(){ return ADS.filter(r=> inRange(r.date, state.start, state.end) && matchScope(r.MB, r.Kenh, r.CID)); }
+function getFilteredOrders(){ return ORDERS.filter(r=> inRange(r.date, state.start, state.end) && matchScope(r.MB, r.Kenh, r.CID)); }
+
+function fmt(n){ return Math.round(n||0).toLocaleString('vi-VN')+' ₫'; }
+function fmtN(n){ return Math.round(n||0).toLocaleString('vi-VN'); }
+function fmtPct(n){ return (isFinite(n)? (n*100).toFixed(1):'0.0')+'%'; }
+function fmtX(n){ return (isFinite(n)? n.toFixed(2):'0.00')+'x'; }
+function roasClass(r){ return r>=1.3?'good':(r>=0.9?'warn':'bad'); }
+
+function aggAds(rows){
+  const a = {Spend:0,Impressions:0,Clicks:0,Reach:0,ThruPlay:0,Video3s:0,Mess:0,Lead:0};
+  rows.forEach(r=>{ a.Spend+=r.Spend; a.Impressions+=r.Impressions; a.Clicks+=r.Clicks; a.Reach+=r.Reach; a.ThruPlay+=r.ThruPlay; a.Video3s+=r.Video3s; a.Mess+=r.Mess; a.Lead+=r.Lead; });
+  a.CTR = a.Impressions>0? a.Clicks/a.Impressions:0;
+  a.CPM = a.Impressions>0? a.Spend/a.Impressions*1000:0;
+  a.HookRate = a.Impressions>0? a.Video3s/a.Impressions:0;
+  return a;
+}
+function aggOrders(rows){
+  const matched = rows.filter(r=>r.status==='matched');
+  const revAll = rows.reduce((s,r)=>s+r.Revenue,0);
+  const revMatched = matched.reduce((s,r)=>s+r.Revenue,0);
+  const revMess = rows.filter(r=>r.status==='matched' && r.Kenh==='Facebook (Mess)').reduce((s,r)=>s+r.Revenue,0);
+  const revLDP = rows.filter(r=>r.status==='matched' && r.Kenh==='Webcake (LDP)').reduce((s,r)=>s+r.Revenue,0);
+  const revUnident = rows.filter(r=>r.status==='unidentified').reduce((s,r)=>s+r.Revenue,0);
+  return { OrderCount: rows.length, MatchedOrderCount: matched.length, Doanh_thu: revAll, Doanh_thu_matched: revMatched, Doanh_thu_Mess: revMess, Doanh_thu_LDP: revLDP, Doanh_thu_unident: revUnident };
+}
+
+function renderKPI(){
+  const ads = aggAds(getFilteredAds());
+  const ord = aggOrders(getFilteredOrders());
+  const roas = ads.Spend>0? ord.Doanh_thu_matched/ads.Spend:0;
+  const cir = ord.Doanh_thu_matched>0? ads.Spend/ord.Doanh_thu_matched:0;
+  const cvr = (ads.Mess+ads.Lead)>0? ord.MatchedOrderCount/(ads.Mess+ads.Lead):0;
+  const aov = ord.OrderCount>0? ord.Doanh_thu/ord.OrderCount:0;
+  const cards = [
+    ['Chi phí (Ads)', fmt(ads.Spend), 'rgba(88,124,255,0.14)','rgb(150,175,255)'],
+    ['Doanh thu (quy CID)', fmt(ord.Doanh_thu_matched), 'rgba(74,222,128,0.14)','rgb(120,220,150)'],
+    ['ROAS', fmtX(roas), 'rgba(168,139,250,0.14)','rgb(190,160,250)'],
+    ['CIR', fmtPct(cir), 'rgba(250,204,21,0.14)','rgb(250,204,21)'],
+    ['CPM', fmt(ads.CPM), 'rgba(56,189,248,0.14)','rgb(110,200,240)'],
+    ['CVR', fmtPct(cvr), 'rgba(52,211,153,0.14)','rgb(110,230,190)'],
+    ['Đơn hàng', fmtN(ord.OrderCount), 'rgba(129,140,248,0.14)','rgb(170,178,250)'],
+    ['AOV (giá trị TB/đơn)', fmt(aov), 'rgba(244,114,182,0.14)','rgb(248,170,205)'],
+    ['Doanh thu tổng (mọi trạng thái)', fmt(ord.Doanh_thu), 'rgba(45,212,191,0.14)','rgb(110,225,215)'],
+    ['Doanh thu Mess', fmt(ord.Doanh_thu_Mess), 'rgba(251,146,60,0.14)','rgb(250,180,120)'],
+    ['Doanh thu Webcake (LDP)', fmt(ord.Doanh_thu_LDP), 'rgba(96,165,250,0.14)','rgb(150,195,250)'],
+    ['Doanh thu chưa gắn CID', fmt(ord.Doanh_thu_unident), 'rgba(248,113,113,0.14)','rgb(248,150,150)'],
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(c=>
+    `<div class="kpi-card" style="background:${c[2]}"><p class="l" style="color:${c[3]}">${c[0]}</p><p class="v" style="color:${c[3]}">${c[1]}</p></div>`
+  ).join('');
+}
+
+let revChart, topCidChart, mbChart;
+
+function renderRevChart(){
+  const ads = getFilteredAds(), ord = getFilteredOrders();
+  const dates = Array.from(new Set([...ads.map(r=>r.date), ...ord.map(r=>r.date)])).sort();
+  const costByDate = {}, revByDate = {};
+  ads.forEach(r=>{ costByDate[r.date]=(costByDate[r.date]||0)+r.Spend; });
+  ord.forEach(r=>{ if(r.status==='matched') revByDate[r.date]=(revByDate[r.date]||0)+r.Revenue; });
+  if(revChart) revChart.destroy();
+  revChart = new Chart(document.getElementById('revChart'), {
+    type:'line',
+    data:{ labels:dates.map(d=>d.slice(5)),
+      datasets:[
+        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(88,124,255)', backgroundColor:'rgba(88,124,255,0.12)', fill:true, tension:0.3, pointRadius:2 },
+        { label:'Doanh thu (quy CID)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(74,222,128)', backgroundColor:'rgba(74,222,128,0.12)', fill:true, tension:0.3, pointRadius:2 }
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
+
+function cidUniverse(kenh){
+  const ads = getFilteredAds();
+  const ord = getFilteredOrders().filter(r=>r.status==='matched' && r.CID && (!kenh || r.Kenh===kenh));
+  const map = {};
+  ads.forEach(r=>{
+    const key = r.CID+'|'+r.MB;
+    if(!map[key]) map[key] = {CID:r.CID, MB:r.MB, Spend:0,Impressions:0,Clicks:0,Reach:0,ThruPlay:0,Video3s:0,Mess:0,Lead:0,Doanh_thu:0,OrderCount:0};
+    map[key].Spend+=r.Spend; map[key].Impressions+=r.Impressions; map[key].Clicks+=r.Clicks;
+    map[key].Reach+=r.Reach; map[key].ThruPlay+=r.ThruPlay; map[key].Video3s+=r.Video3s; map[key].Mess+=r.Mess; map[key].Lead+=r.Lead;
+  });
+  ord.forEach(r=>{
+    const key = r.CID+'|'+r.MB;
+    if(!map[key]) map[key] = {CID:r.CID, MB:r.MB, Spend:0,Impressions:0,Clicks:0,Reach:0,ThruPlay:0,Video3s:0,Mess:0,Lead:0,Doanh_thu:0,OrderCount:0};
+    map[key].Doanh_thu += r.Revenue; map[key].OrderCount += 1;
+  });
+  Object.values(map).forEach(v=>{
+    v.ROAS = v.Spend>0? v.Doanh_thu/v.Spend:0;
+    v.CIR = v.Doanh_thu>0? v.Spend/v.Doanh_thu:0;
+    v.CTR = v.Impressions>0? v.Clicks/v.Impressions:0;
+    v.CPM = v.Impressions>0? v.Spend/v.Impressions*1000:0;
+    v.HookRate = v.Impressions>0? v.Video3s/v.Impressions:0;
+    v.CVR = (v.Mess+v.Lead)>0? v.OrderCount/(v.Mess+v.Lead):0;
+    v.MC = cidMC(v.CID) || 'Không xác định';
+    v.Product = cidProduct(v.CID);
+  });
+  return Object.values(map).filter(v => v.Spend>0 || v.Doanh_thu>0);
+}
+
+function cidOrdersList(cid, mb){
+  return getFilteredOrders().filter(r=>r.status==='matched' && r.CID===cid && r.MB===mb).sort((a,b)=> a.date<b.date?1:-1);
+}
+
+function renderTopCid(){
+  const metric = document.getElementById('cidMetric').value;
+  const rows = cidUniverse().sort((a,b)=>b[metric]-a[metric]).slice(0,10);
+  if(topCidChart) topCidChart.destroy();
+  topCidChart = new Chart(document.getElementById('topCidChart'), {
+    type:'bar',
+    data:{ labels:rows.map(r=>r.CID), datasets:[{ data:rows.map(r=>Math.round(r[metric])), backgroundColor:'rgb(88,124,255)', borderRadius:4 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }
+  });
+}
+document.getElementById('cidMetric').addEventListener('change', renderTopCid);
+
+function mbBreakdown(){
+  const ads = getFilteredAds(), ord = getFilteredOrders();
+  return MB_LIST.map(mb=>{
+    const a = aggAds(ads.filter(r=>r.MB===mb));
+    const o = aggOrders(ord.filter(r=>r.MB===mb));
+    const roas = a.Spend>0? o.Doanh_thu_matched/a.Spend:0;
+    const cir = o.Doanh_thu_matched>0? a.Spend/o.Doanh_thu_matched:0;
+    const cvr = (a.Mess+a.Lead)>0? o.MatchedOrderCount/(a.Mess+a.Lead):0;
+    const aov = o.OrderCount>0? o.Doanh_thu/o.OrderCount:0;
+    return {MB:mb, ...a, ...o, ROAS:roas, CIR:cir, CVR:cvr, AOV:aov};
+  });
+}
+
+function renderMbChart(){
+  const rows = mbBreakdown();
+  if(mbChart) mbChart.destroy();
+  mbChart = new Chart(document.getElementById('mbChart'), {
+    type:'bar',
+    data:{ labels:rows.map(m=>m.MB), datasets:[
+      { label:'Chi phí', data:rows.map(m=>Math.round(m.Spend)), backgroundColor:'rgb(88,124,255)', borderRadius:4 },
+      { label:'Doanh thu', data:rows.map(m=>Math.round(m.Doanh_thu_matched)), backgroundColor:'rgb(74,222,128)', borderRadius:4 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ autoSkip:false, maxRotation:20, minRotation:0 } } } }
+  });
+  document.getElementById('mbRoasLabels').innerHTML = rows.map(m=>`<span class="${roasClass(m.ROAS)}">${m.MB}: ROAS ${fmtX(m.ROAS)}</span>`).join('');
+}
+
+function detailGridHtml(fields){
+  return '<div class="detailGrid">' + fields.map(f=>`<div><div class="k">${f[0]}</div><div class="v">${f[1]}</div></div>`).join('') + '</div>';
+}
+
+function cidDetailBlockHtml(r){
+  const orders = cidOrdersList(r.CID, r.MB);
+  let ordersHtml = `<div class="subTable"><div class="title">Đơn hàng (${orders.length})</div>`;
+  if(orders.length===0){ ordersHtml += `Không có đơn trong phạm vi lọc`; }
+  else {
+    ordersHtml += `<div class="miniList"><table><tr><td class="muted">Ngày</td><td class="muted">SĐT</td><td class="muted">Mã đơn</td><td class="muted" style="text-align:right">Doanh thu</td></tr>` +
+      orders.map(o=>`<tr><td>${o.date}</td><td>${o.Phone}</td><td>${o.OrderId}</td><td style="text-align:right">${fmt(o.Revenue)}</td></tr>`).join('') + `</table></div>`;
+  }
+  ordersHtml += `</div>`;
+  return detailGridHtml([
+    ['MB Pic', r.MB], ['MC Pic', r.MC], ['Sản phẩm', r.Product||'-'],
+    ['Spend', fmt(r.Spend)], ['Impressions', fmtN(r.Impressions)], ['Clicks', fmtN(r.Clicks)], ['Reach', fmtN(r.Reach)],
+    ['CTR', fmtPct(r.CTR)], ['CPM', fmt(r.CPM)], ['CVR', fmtPct(r.CVR)], ['Mess/Lead', fmtN(r.Mess+r.Lead)],
+    ['ThruPlay', fmtN(r.ThruPlay)], ['Video3sViews', fmtN(r.Video3s)], ['Hook Rate', fmtPct(r.HookRate)],
+    ['Doanh thu', fmt(r.Doanh_thu)], ['Đơn hàng', fmtN(r.OrderCount)], ['ROAS', fmtX(r.ROAS)], ['CIR', fmtPct(r.CIR)]
+  ]) + ordersHtml;
+}
+
+function cirBadge(cir, revenue, spend){
+  if((spend||0) < 1000000) return `<span class="badge-cir badge-cir-testing">Testing</span>`;
+  const pct = (cir||0)*100;
+  if((revenue||0)<=0 || pct===0) return `<span class="badge-cir badge-cir-neutral">Cần xem xét</span>`;
+  if(pct < 35) return `<span class="badge-cir badge-cir-great">Rất ngon</span>`;
+  if(pct < 48) return `<span class="badge-cir badge-cir-good">Đang ngon</span>`;
+  if(pct <= 60) return `<span class="badge-cir badge-cir-warn">Warning zone</span>`;
+  return `<span class="badge-cir badge-cir-bad">Nguy hiểm</span>`;
+}
+
+function applyGlobalCidFilter(rows){
+  const roasMin = parseFloat(document.getElementById('roasMin').value);
+  const roasMax = parseFloat(document.getElementById('roasMax').value);
+  const revMin = parseFloat(document.getElementById('revMin').value);
+  const revMax = parseFloat(document.getElementById('revMax').value);
+  return rows.filter(r=>{
+    if(!isNaN(roasMin) && r.ROAS<roasMin) return false;
+    if(!isNaN(roasMax) && r.ROAS>roasMax) return false;
+    if(!isNaN(revMin) && r.Doanh_thu<revMin) return false;
+    if(!isNaN(revMax) && r.Doanh_thu>revMax) return false;
+    return true;
+  });
+}
+
+function paginate(rows, pageState){
+  const totalPages = Math.max(1, Math.ceil(rows.length/PAGE_SIZE));
+  if(pageState.page>totalPages) pageState.page = totalPages;
+  if(pageState.page<1) pageState.page = 1;
+  const startIdx = (pageState.page-1)*PAGE_SIZE;
+  return { pageRows: rows.slice(startIdx, startIdx+PAGE_SIZE), totalPages };
+}
+
+function pagHtml(pageState, totalPages, prefix){
+  return `<div class="pagBar"><button class="pagBtn" id="${prefix}-prev" ${pageState.page<=1?'disabled':''}>‹ Trước</button><span class="pagInfo">Trang ${pageState.page} / ${totalPages}</span><button class="pagBtn" id="${prefix}-next" ${pageState.page>=totalPages?'disabled':''}>Sau ›</button></div>`;
+}
+
+function wirePagButtons(prefix, pageState, renderFn){
+  const prevB = document.getElementById(prefix+'-prev'), nextB = document.getElementById(prefix+'-next');
+  if(prevB) prevB.addEventListener('click', ()=>{ if(pageState.page>1){ pageState.page--; renderFn(); } });
+  if(nextB) nextB.addEventListener('click', ()=>{ pageState.page++; renderFn(); });
+}
+
+function renderCidRowsHtml(rows, idPrefix){
+  let html = `<tr><td class="muted">CID</td><td class="muted">MB Pic</td><td class="muted">MC Pic</td><td class="muted">Sản phẩm</td><td class="muted" style="text-align:right">Chi phí</td><td class="muted" style="text-align:right">Doanh thu</td><td class="muted" style="text-align:right">ROAS</td><td class="muted" style="text-align:right">CIR</td><td class="muted">Trạng thái</td></tr>`;
+  rows.forEach((r,i)=>{
+    const id = idPrefix+'-row-'+i;
+    const warn = cirBadge(r.CIR, r.Doanh_thu, r.Spend);
+    html += `<tr class="rowClick" data-target="${id}"><td><span class="chev">›</span>${r.CID}</td><td>${r.MB}</td><td>${r.MC}</td><td>${r.Product||'-'}</td><td style="text-align:right">${fmt(r.Spend)}</td><td style="text-align:right">${fmt(r.Doanh_thu)}</td><td style="text-align:right" class="${roasClass(r.ROAS)}">${fmtX(r.ROAS)}</td><td style="text-align:right">${fmtPct(r.CIR)}</td><td>${warn}</td></tr>`;
+    html += `<tr class="${id}" style="display:none"><td colspan="9">${cidDetailBlockHtml(r)}</td></tr>`;
+  });
+  if(rows.length===0){ html += `<tr><td colspan="9" class="muted" style="text-align:center;padding:20px">Không có CID nào trong phạm vi lọc</td></tr>`; }
+  else {
+    const tSpend = rows.reduce((s,r)=>s+r.Spend,0);
+    const tRev = rows.reduce((s,r)=>s+r.Doanh_thu,0);
+    const tRoas = tSpend>0? tRev/tSpend:0;
+    const tCir = tRev>0? tSpend/tRev:0;
+    html += `<tr style="font-weight:700;background:rgba(88,124,255,0.06);border-top:1px solid rgb(48,56,72)"><td colspan="4">Tổng (${rows.length} CID)</td><td style="text-align:right">${fmt(tSpend)}</td><td style="text-align:right">${fmt(tRev)}</td><td style="text-align:right" class="${roasClass(tRoas)}">${fmtX(tRoas)}</td><td style="text-align:right">${fmtPct(tCir)}</td><td></td></tr>`;
+  }
+  return html;
+}
+
+function renderBoardA(){
+  let rows = cidUniverse();
+  if(boardA.mb!=='all') rows = rows.filter(r=>r.MB===boardA.mb);
+  if(boardA.mc!=='all') rows = rows.filter(r=>r.MC===boardA.mc);
+  if(boardA.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardA.status);
+  if(boardA.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardA.search.trim().toLowerCase()));
+  rows = applyGlobalCidFilter(rows);
+  rows.sort((a,b)=>b.ROAS-a.ROAS);
+  const { pageRows, totalPages } = paginate(rows, boardA);
+  document.getElementById('boardA-body').innerHTML = renderCidRowsHtml(pageRows, 'boardA');
+  wireExpand('#boardA-body');
+  document.getElementById('boardA-pag').innerHTML = pagHtml(boardA, totalPages, 'boardA');
+  wirePagButtons('boardA', boardA, renderBoardA);
+}
+
+function renderBoardB(){
+  const kenh = boardB.platform!=='all' ? boardB.platform : undefined;
+  let rows = cidUniverse(kenh);
+  if(boardB.mc!=='all') rows = rows.filter(r=>r.MC===boardB.mc);
+  if(boardB.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardB.status);
+  if(boardB.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardB.search.trim().toLowerCase()));
+  rows = applyGlobalCidFilter(rows);
+  rows.sort((a,b)=>b.ROAS-a.ROAS);
+  const { pageRows, totalPages } = paginate(rows, boardB);
+  document.getElementById('boardB-body').innerHTML = renderCidRowsHtml(pageRows, 'boardB');
+  wireExpand('#boardB-body');
+  document.getElementById('boardB-pag').innerHTML = pagHtml(boardB, totalPages, 'boardB');
+  wirePagButtons('boardB', boardB, renderBoardB);
+}
+
+function renderBoardC(){
+  const kenh = boardC.kenh!=='all' ? boardC.kenh : undefined;
+  let rows = cidUniverse(kenh);
+  if(boardC.mb!=='all') rows = rows.filter(r=>r.MB===boardC.mb);
+  if(boardC.mc!=='all') rows = rows.filter(r=>r.MC===boardC.mc);
+  if(boardC.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardC.status);
+  if(boardC.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardC.search.trim().toLowerCase()));
+  rows = applyGlobalCidFilter(rows);
+  rows.sort((a,b)=>b.ROAS-a.ROAS);
+  const { pageRows, totalPages } = paginate(rows, boardC);
+  document.getElementById('boardC-body').innerHTML = renderCidRowsHtml(pageRows, 'boardC');
+  wireExpand('#boardC-body');
+  document.getElementById('boardC-pag').innerHTML = pagHtml(boardC, totalPages, 'boardC');
+  wirePagButtons('boardC', boardC, renderBoardC);
+}
+
+function renderBoardD(){
+  let rows = cidUniverse();
+  if(boardD.product!=='all') rows = rows.filter(r=>r.Product===boardD.product);
+  if(boardD.mb!=='all') rows = rows.filter(r=>r.MB===boardD.mb);
+  if(boardD.mc!=='all') rows = rows.filter(r=>r.MC===boardD.mc);
+  if(boardD.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardD.status);
+  if(boardD.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardD.search.trim().toLowerCase()));
+  rows = applyGlobalCidFilter(rows);
+  rows.sort((a,b)=>b.ROAS-a.ROAS);
+  const { pageRows, totalPages } = paginate(rows, boardD);
+  document.getElementById('boardD-body').innerHTML = renderCidRowsHtml(pageRows, 'boardD');
+  wireExpand('#boardD-body');
+  document.getElementById('boardD-pag').innerHTML = pagHtml(boardD, totalPages, 'boardD');
+  wirePagButtons('boardD', boardD, renderBoardD);
+}
+
+function renderSidebarSpendKpi(){
+  const rows = cidUniverse();
+  const count = rows.filter(r=>r.Spend>3000000).length;
+  document.getElementById('sidebarSpendKpi').textContent = fmtN(count);
+}
+
+function cidStatusLabel(r){
+  if((r.Spend||0) < 1000000) return 'Testing';
+  const pct = (r.CIR||0)*100;
+  if((r.Doanh_thu||0)<=0 || pct===0) return 'Cần xem xét';
+  if(pct < 35) return 'Rất ngon';
+  if(pct < 48) return 'Đang ngon';
+  if(pct <= 60) return 'Warning zone';
+  return 'Nguy hiểm';
+}
+
+const PIE_COLORS = ['rgb(88,124,255)','rgb(74,222,128)','rgb(250,204,21)','rgb(248,113,113)','rgb(168,85,247)','rgb(96,165,250)','rgb(244,114,182)','rgb(45,212,191)'];
+let pieCharts = {};
+function renderPie(canvasId, labels, values, valueFormat){
+  const el = document.getElementById(canvasId);
+  if(!el) return;
+  if(pieCharts[canvasId]) pieCharts[canvasId].destroy();
+  const total = values.reduce((s,v)=>s+v,0);
+  pieCharts[canvasId] = new Chart(el, {
+    type:'pie',
+    data:{ labels, datasets:[{ data:values, backgroundColor: labels.map((_,i)=>PIE_COLORS[i%PIE_COLORS.length]), borderColor:'rgb(15,19,28)', borderWidth:2 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10} } },
+        tooltip:{ callbacks:{ label:function(ctx){
+          const v = ctx.parsed;
+          const pct = total>0? (v/total*100).toFixed(1) : '0.0';
+          const vLabel = valueFormat==='money'? fmt(v) : (valueFormat==='ratio'? fmtX(v) : fmtN(v));
+          return ctx.label+': '+vLabel+' ('+pct+'%)';
+        } } }
+      }
+    }
+  });
+}
+
+function groupSum(rows, keyFn, valFn){
+  const m = {};
+  rows.forEach(r=>{ const k = keyFn(r); m[k] = (m[k]||0) + valFn(r); });
+  return m;
+}
+
+function renderSidebarPies(){
+  const rows = cidUniverse();
+
+  // 1. So luong CID theo trang thai
+  const statusCount = {};
+  rows.forEach(r=>{ const s = cidStatusLabel(r); statusCount[s] = (statusCount[s]||0)+1; });
+  renderPie('pieStatus', Object.keys(statusCount), Object.values(statusCount), 'count');
+
+  // 2. Doanh thu CID theo MC
+  const revByMc = groupSum(rows, r=>r.MC||'Không xác định', r=>r.Doanh_thu);
+  renderPie('pieRevByMc', Object.keys(revByMc), Object.values(revByMc), 'money');
+
+  // 3. Doanh thu theo MB
+  const revByMb = groupSum(rows, r=>r.MB||'-', r=>r.Doanh_thu);
+  renderPie('pieRevByMb', Object.keys(revByMb), Object.values(revByMb), 'money');
+
+  // 4. ROAS theo MB (ty le dong gop ROAS quy doi tu Doanh_thu/Spend gop nhom)
+  const spendByMb = groupSum(rows, r=>r.MB||'-', r=>r.Spend);
+  const roasByMb = {};
+  Object.keys(revByMb).forEach(mb=>{ roasByMb[mb] = spendByMb[mb]>0 ? (revByMb[mb]/spendByMb[mb]) : 0; });
+  renderPie('pieRoasByMb', Object.keys(roasByMb), Object.values(roasByMb), 'ratio');
+
+  // 5. Doanh thu theo San pham
+  const revByProduct = groupSum(rows, r=>r.Product||'Không xác định', r=>r.Doanh_thu);
+  renderPie('pieRevByProduct', Object.keys(revByProduct), Object.values(revByProduct), 'money');
+}
+
+function wireExpand(containerSel){
+  document.querySelectorAll(containerSel+' .rowClick').forEach(row=>{
+    row.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const targetId = row.dataset.target;
+      const targets = document.querySelectorAll('.'+CSS.escape(targetId));
+      const chev = row.querySelector('.chev');
+      const hidden = targets[0] && targets[0].style.display==='none';
+      targets.forEach(t=> t.style.display = hidden? 'table-row' : 'none');
+      if(chev) chev.textContent = hidden? '⌄' : '›';
+      // khi thu gọn 1 dòng cha, thu gọn + reset luôn mọi dòng con cháu bên trong nó (theo data-parent)
+      if(!hidden){
+        document.querySelectorAll('[data-parent="'+CSS.escape(targetId)+'"]').forEach(child=>{
+          child.style.display = 'none';
+          if(child.classList.contains('rowClick')){
+            const childChev = child.querySelector('.chev');
+            if(childChev) childChev.textContent = '›';
+            const grandTargets = document.querySelectorAll('.'+CSS.escape(child.dataset.target));
+            grandTargets.forEach(t=> t.style.display='none');
+          }
+        });
+      }
+    });
+  });
+}
+
+function renderAll(){
+  renderKPI(); renderRevChart(); renderTopCid(); renderMbChart();
+  renderBoardA(); renderBoardB(); renderBoardC(); renderBoardD();
+  renderSidebarSpendKpi();
+  renderSidebarPies();
+}
+
+document.getElementById('toggleSidebar').addEventListener('click', function(){
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('collapsed');
+  this.textContent = sb.classList.contains('collapsed') ? '›' : '‹';
+});
+document.querySelectorAll('.sbitem').forEach(el=>{
+  el.addEventListener('click', function(){
+    document.querySelectorAll('.sbitem').forEach(s=>s.classList.remove('active'));
+    el.classList.add('active');
+    state.scope = { type: el.dataset.type, value: el.dataset.value };
+    document.getElementById('scopeLabel').textContent = el.textContent;
+    renderAll();
+  });
+});
+function moveTabUnderline(tabEl, barEl, underlineEl){
+  if(!barEl || !underlineEl) return;
+  if(!tabEl){ underlineEl.style.display='none'; return; }
+  const barRect = barEl.getBoundingClientRect();
+  const tabRect = tabEl.getBoundingClientRect();
+  underlineEl.style.left = (tabRect.left - barRect.left) + 'px';
+  underlineEl.style.width = tabRect.width + 'px';
+  underlineEl.style.display = 'block';
+}
+
+function buildOptions(selectEl, values, allLabel){
+  selectEl.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v=>`<option value="${v}">${v}</option>`).join('');
+}
+
+// ---- Board A: theo Media Buyer ----
+const boardATabsEl = document.getElementById('boardA-tabs');
+boardATabsEl.insertAdjacentHTML('afterbegin', ['all',...MB_LIST].map((mb,i)=>`<div class="tab ${i===0?'active':''}" data-mb="${mb}">${mb==='all'?'Tất cả':mb}</div>`).join(''));
+boardATabsEl.addEventListener('click', function(e){
+  const t = e.target.closest('.tab'); if(!t) return;
+  boardATabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  boardA.mb = t.dataset.mb; boardA.page = 1;
+  moveTabUnderline(t, boardATabsEl, document.getElementById('boardA-underline'));
+  renderBoardA();
+});
+const boardAMcSelect = document.getElementById('boardA-mcFilter');
+buildOptions(boardAMcSelect, MC_LIST, 'Tất cả');
+boardAMcSelect.addEventListener('change', function(){
+  boardA.mc = this.value; boardA.page = 1; renderBoardA();
+});
+const boardAStatusSelect = document.getElementById('boardA-statusFilter');
+buildOptions(boardAStatusSelect, STATUS_LIST, 'Tất cả');
+boardAStatusSelect.addEventListener('change', function(){
+  boardA.status = this.value; boardA.page = 1; renderBoardA();
+});
+
+// ---- Board B: theo Media Creator ----
+const boardBTabsEl = document.getElementById('boardB-tabs');
+boardBTabsEl.insertAdjacentHTML('afterbegin', ['all',...MC_LIST].map((mc,i)=>`<div class="tab ${i===0?'active':''}" data-mc="${mc}">${mc==='all'?'Tất cả':mc}</div>`).join(''));
+boardBTabsEl.addEventListener('click', function(e){
+  const t = e.target.closest('.tab'); if(!t) return;
+  boardBTabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  boardB.mc = t.dataset.mc; boardB.page = 1;
+  moveTabUnderline(t, boardBTabsEl, document.getElementById('boardB-underline'));
+  renderBoardB();
+});
+const boardBPlatformSelect = document.getElementById('boardB-platformFilter');
+buildOptions(boardBPlatformSelect, PLATFORMS, 'Tất cả');
+boardBPlatformSelect.addEventListener('change', function(){
+  boardB.platform = this.value; boardB.page = 1; renderBoardB();
+});
+const boardBStatusSelect = document.getElementById('boardB-statusFilter');
+buildOptions(boardBStatusSelect, STATUS_LIST, 'Tất cả');
+boardBStatusSelect.addEventListener('change', function(){
+  boardB.status = this.value; boardB.page = 1; renderBoardB();
+});
+
+// ---- Board C: theo Nền tảng ----
+const boardCTabsEl = document.getElementById('boardC-tabs');
+const PLATFORM_LABELS = { 'Facebook (Mess)':'Mess', 'Webcake (LDP)':'Webcake' };
+boardCTabsEl.insertAdjacentHTML('afterbegin', ['all',...PLATFORMS].map((p,i)=>`<div class="tab ${i===0?'active':''}" data-kenh="${p}">${p==='all'?'Tất cả':(PLATFORM_LABELS[p]||p)}</div>`).join(''));
+boardCTabsEl.addEventListener('click', function(e){
+  const t = e.target.closest('.tab'); if(!t) return;
+  boardCTabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  boardC.kenh = t.dataset.kenh; boardC.page = 1;
+  moveTabUnderline(t, boardCTabsEl, document.getElementById('boardC-underline'));
+  renderBoardC();
+});
+const boardCMbSelect = document.getElementById('boardC-mbFilter');
+buildOptions(boardCMbSelect, MB_LIST, 'Tất cả');
+boardCMbSelect.addEventListener('change', function(){
+  boardC.mb = this.value; boardC.page = 1; renderBoardC();
+});
+const boardCMcSelect = document.getElementById('boardC-mcFilter');
+buildOptions(boardCMcSelect, MC_LIST, 'Tất cả');
+boardCMcSelect.addEventListener('change', function(){
+  boardC.mc = this.value; boardC.page = 1; renderBoardC();
+});
+const boardCStatusSelect = document.getElementById('boardC-statusFilter');
+buildOptions(boardCStatusSelect, STATUS_LIST, 'Tất cả');
+boardCStatusSelect.addEventListener('change', function(){
+  boardC.status = this.value; boardC.page = 1; renderBoardC();
+});
+
+// ---- Board D: theo Sản phẩm ----
+const boardDTabsEl = document.getElementById('boardD-tabs');
+boardDTabsEl.insertAdjacentHTML('afterbegin', ['all',...PRODUCT_LIST].map((p,i)=>`<div class="tab ${i===0?'active':''}" data-product="${p}">${p==='all'?'Tất cả':p}</div>`).join(''));
+boardDTabsEl.addEventListener('click', function(e){
+  const t = e.target.closest('.tab'); if(!t) return;
+  boardDTabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  boardD.product = t.dataset.product; boardD.page = 1;
+  moveTabUnderline(t, boardDTabsEl, document.getElementById('boardD-underline'));
+  renderBoardD();
+});
+const boardDMbSelect = document.getElementById('boardD-mbFilter');
+buildOptions(boardDMbSelect, MB_LIST, 'Tất cả');
+boardDMbSelect.addEventListener('change', function(){
+  boardD.mb = this.value; boardD.page = 1; renderBoardD();
+});
+const boardDMcSelect = document.getElementById('boardD-mcFilter');
+buildOptions(boardDMcSelect, MC_LIST, 'Tất cả');
+boardDMcSelect.addEventListener('change', function(){
+  boardD.mc = this.value; boardD.page = 1; renderBoardD();
+});
+const boardDStatusSelect = document.getElementById('boardD-statusFilter');
+buildOptions(boardDStatusSelect, STATUS_LIST, 'Tất cả');
+boardDStatusSelect.addEventListener('change', function(){
+  boardD.status = this.value; boardD.page = 1; renderBoardD();
+});
+
+function wireCidSearch(prefix, boardState, renderFn){
+  const btn = document.getElementById(prefix+'-searchBtn');
+  const input = document.getElementById(prefix+'-searchInput');
+  btn.addEventListener('click', function(){
+    input.classList.toggle('open');
+    if(input.classList.contains('open')) input.focus();
+    else { input.value=''; boardState.search=''; boardState.page=1; renderFn(); }
+  });
+  input.addEventListener('input', function(){
+    boardState.search = this.value; boardState.page = 1; renderFn();
+  });
+  input.addEventListener('paste', function(){
+    setTimeout(()=>{ boardState.search = input.value; boardState.page = 1; renderFn(); }, 0);
+  });
+}
+wireCidSearch('boardA', boardA, renderBoardA);
+wireCidSearch('boardB', boardB, renderBoardB);
+wireCidSearch('boardC', boardC, renderBoardC);
+wireCidSearch('boardD', boardD, renderBoardD);
+
+function refreshAllTabUnderlines(){
+  moveTabUnderline(boardATabsEl.querySelector('.tab.active'), boardATabsEl, document.getElementById('boardA-underline'));
+  moveTabUnderline(boardBTabsEl.querySelector('.tab.active'), boardBTabsEl, document.getElementById('boardB-underline'));
+  moveTabUnderline(boardCTabsEl.querySelector('.tab.active'), boardCTabsEl, document.getElementById('boardC-underline'));
+  moveTabUnderline(boardDTabsEl.querySelector('.tab.active'), boardDTabsEl, document.getElementById('boardD-underline'));
+}
+window.addEventListener('load', refreshAllTabUnderlines);
+window.addEventListener('resize', refreshAllTabUnderlines);
+
+// ---- Sidebar global ROAS / Doanh thu range filters ----
+['roasMin','roasMax','revMin','revMax'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', function(){
+    boardA.page = 1; boardB.page = 1; boardC.page = 1; boardD.page = 1;
+    renderBoardA(); renderBoardB(); renderBoardC(); renderBoardD();
+  });
+});
+
+const dateBtn = document.getElementById('dateBtnToggle'), dateMenu = document.getElementById('dateMenu'), calBox = document.getElementById('calendarBox');
+dateBtn.addEventListener('click', ()=>{ dateMenu.classList.toggle('open'); calBox.classList.remove('open'); });
+dateMenu.addEventListener('click', (e)=>{
+  const it = e.target.closest('.dateItem'); if(!it) return;
+  if(it.dataset.v === 'custom'){ dateMenu.classList.remove('open'); renderCalendar(); calBox.classList.add('open'); return; }
+  document.querySelectorAll('.dateItem').forEach(x=>{ x.classList.remove('active'); x.innerHTML = x.innerHTML.replace(' <span>&#10003;</span>',''); });
+  it.classList.add('active'); it.innerHTML += ' <span>&#10003;</span>';
+  const label = it.textContent.replace('✓','').trim();
+  dateBtn.firstChild.textContent = label + ' ';
+  const [s,en] = computeRange(it.dataset.v);
+  state.start = s; state.end = en; state.presetLabel = label;
+  dateMenu.classList.remove('open');
+  renderAll();
+});
+
+let calState = { y: MAX_DATE.getUTCFullYear(), m: MAX_DATE.getUTCMonth() };
+let customStart = null, customEnd = null;
+function renderCalendar(){
+  calBox.innerHTML = '';
+  for(let i=0;i<2;i++){
+    let y = calState.y + Math.floor((calState.m+i)/12), m = (calState.m+i)%12;
+    const first = new Date(Date.UTC(y,m,1)), startDow = first.getUTCDay(), daysInMonth = new Date(Date.UTC(y,m+1,0)).getUTCDate();
+    const div = document.createElement('div'); div.className='calMonth';
+    const head = document.createElement('div'); head.className='calHead';
+    head.innerHTML = (i===0? '<button class="navBtn" id="calPrev">‹</button>':'<span></span>') + `<span>tháng ${m+1} năm ${y}</span>` + (i===1? '<button class="navBtn" id="calNext">›</button>':'<span></span>');
+    div.appendChild(head);
+    const grid = document.createElement('div'); grid.className='calGrid';
+    ['CN','T2','T3','T4','T5','T6','T7'].forEach(dw=>{ const s=document.createElement('div'); s.className='dow'; s.textContent=dw; grid.appendChild(s); });
+    for(let b=0;b<startDow;b++){ grid.appendChild(document.createElement('div')); }
+    for(let d=1; d<=daysInMonth; d++){
+      const dateObj = new Date(Date.UTC(y,m,d));
+      const cell = document.createElement('div'); cell.className='day'; cell.textContent=d;
+      if(customStart && dateObj.getTime()===customStart.getTime()) cell.classList.add('sel');
+      if(customEnd && dateObj.getTime()===customEnd.getTime()) cell.classList.add('sel');
+      if(customStart && customEnd && dateObj>=customStart && dateObj<=customEnd) cell.classList.add('inrange');
+      cell.addEventListener('click', ()=>{
+        if(!customStart || (customStart && customEnd)){ customStart = dateObj; customEnd = null; }
+        else { if(dateObj<customStart){ customEnd=customStart; customStart=dateObj; } else { customEnd=dateObj; } }
+        renderCalendar();
+      });
+      grid.appendChild(cell);
+    }
+    div.appendChild(grid);
+    if(i===1){
+      const foot = document.createElement('div'); foot.className='calFoot';
+      const btn = document.createElement('button'); btn.className='applyBtn'; btn.textContent='Áp dụng';
+      btn.addEventListener('click', ()=>{
+        if(customStart){
+          state.start = customStart; state.end = customEnd || customStart;
+          const fmtD = d => String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0');
+          const rangeLabel = fmtD(state.start) + ' - ' + fmtD(state.end);
+          state.presetLabel = rangeLabel;
+          document.querySelectorAll('.dateItem').forEach(x=>{ x.classList.remove('active'); x.innerHTML = x.innerHTML.replace(' <span>&#10003;</span>',''); });
+          dateBtn.firstChild.textContent = rangeLabel + ' ';
+          calBox.classList.remove('open');
+          renderAll();
+        }
+      });
+      foot.appendChild(btn); div.appendChild(foot);
+    }
+    calBox.appendChild(div);
+  }
+  const prev = document.getElementById('calPrev'), next = document.getElementById('calNext');
+  if(prev) prev.addEventListener('click', ()=>{ calState.m--; if(calState.m<0){calState.m=11;calState.y--;} renderCalendar(); });
+  if(next) next.addEventListener('click', ()=>{ calState.m++; if(calState.m>11){calState.m=0;calState.y++;} renderCalendar(); });
+}
+document.addEventListener('click', (e)=>{
+  const path = e.composedPath ? e.composedPath() : [];
+  const insideDateBtn = path.some(el => el.classList && el.classList.contains('dateBtn'));
+  const insideDateMenu = path.some(el => el.classList && el.classList.contains('dateMenu'));
+  const insideCalBox = path.some(el => el.classList && el.classList.contains('calendarBox'));
+  if(!insideDateBtn && !insideDateMenu && !insideCalBox){ dateMenu.classList.remove('open'); calBox.classList.remove('open'); }
+});
+
+function tickClock(){
+  const now = new Date();
+  const s = now.toLocaleString('vi-VN', { timeZone:'Asia/Ho_Chi_Minh', hour12:false,
+    day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  document.getElementById('clockBox').textContent = s;
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+Chart.defaults.color = 'rgb(148,157,176)';
+Chart.defaults.borderColor = 'rgb(24,30,42)';
+
+renderAll();
+refreshAllTabUnderlines();
+setTimeout(refreshAllTabUnderlines, 50);
+})();
+</script>
+</body>
+</html>
