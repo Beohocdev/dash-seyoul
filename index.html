@@ -293,7 +293,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 (async function(){
-const API_URL = 'https://script.google.com/macros/s/AKfycbzQoWGB2ieM4-KfNXN-bTbH1S7fYqK9tGt2PdjxnaVwvW79ZDYhTAfogSXWF1prog/exec';
+const API_URL = 'https://dash-seyoul-api.nguyenkhacquan3194.workers.dev';
 const params = new URLSearchParams(location.search);
 let VIEWER_EMAIL = (params.get('email') || localStorage.getItem('seyoul_viewer_email') || '').trim();
 if(!VIEWER_EMAIL){ VIEWER_EMAIL = (prompt('Nhập email đăng nhập của bạn (@tvhs.asia):') || '').trim(); }
