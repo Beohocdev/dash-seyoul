@@ -30,6 +30,7 @@
     --kpi10-bg: rgba(251,146,60,0.14); --kpi10-fg: rgb(250,180,120);
     --kpi11-bg: rgba(96,165,250,0.14); --kpi11-fg: rgb(150,195,250);
     --kpi12-bg: rgba(248,113,113,0.14);--kpi12-fg: rgb(248,150,150);
+    --chart-grid: rgba(255,255,255,0.06);
   }
   body.light-theme {
     --bg-page: rgb(244,246,250);
@@ -56,6 +57,7 @@
     --kpi10-bg: rgba(194,65,12,0.16); --kpi10-fg: rgb(155,52,10);
     --kpi11-bg: rgba(29,78,216,0.16); --kpi11-fg: rgb(23,62,173);
     --kpi12-bg: rgba(185,28,28,0.16); --kpi12-fg: rgb(148,22,22);
+    --chart-grid: rgba(20,26,40,0.06);
   }
   .themeToggle { display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; font-size:14px; }
   .themeSwitch { width:40px; height:22px; border-radius:12px; background:var(--bg-input); border:1px solid var(--border-input); position:relative; transition:background .2s ease; flex-shrink:0; }
@@ -115,14 +117,14 @@
   .navBtn { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px; }
   .calFoot { display:flex; justify-content:flex-end; margin-top:10px; }
   .applyBtn { background:rgb(37,71,201); color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; cursor:pointer; }
-  .layout { display:flex; }
-  .sidebar { width:210px; flex-shrink:0; background:var(--bg-sidebar); border-right:1px solid var(--border-strong); padding:16px 10px; transition:width .2s ease; overflow:hidden; }
-  .sidebar.collapsed { width:0; padding-left:0; padding-right:0; border-right:none; }
+  .layout { display:flex; align-items:flex-start; }
+  .sidebar { width:210px; flex-shrink:0; background:var(--bg-sidebar); border-right:1px solid var(--border-strong); border-radius:0 12px 12px 0; padding:16px 10px; transition:width .2s ease; overflow-y:auto; overflow-x:hidden; position:sticky; top:0; max-height:100vh; }
+  .sidebar.collapsed { width:0; padding-left:0; padding-right:0; border-right:none; max-height:0; }
   .sidebar p.label { font-size:11px; color:rgb(110,118,135); text-transform:uppercase; margin:14px 6px 6px; white-space:nowrap; }
   .sbitem { padding:9px 10px; border-radius:8px; font-size:13px; cursor:pointer; margin-bottom:2px; white-space:nowrap; user-select:none; }
   .sbitem:hover { background:var(--border-table); }
   .sbitem.active { background:rgb(37,71,201); color:#fff; }
-  .toggleBtn { width:22px; height:44px; background:var(--bg-input); border:1px solid var(--border-input); border-radius:0 8px 8px 0; color:var(--text-muted); cursor:pointer; align-self:flex-start; margin-top:20px; flex-shrink:0; }
+  .toggleBtn { width:22px; height:44px; background:var(--bg-input); border:1px solid var(--border-input); border-radius:0 8px 8px 0; color:var(--text-muted); cursor:pointer; align-self:flex-start; margin-top:20px; flex-shrink:0; position:sticky; top:20px; z-index:5; }
   .main { flex:1; min-width:0; padding:20px; }
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
   .kpi-card { border-radius:12px; padding:14px; }
@@ -453,12 +455,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 (function(){
-  // Always start in dark theme regardless of what was toggled last time.
-  document.body.classList.remove('light-theme');
+  // Restore whichever theme was used most recently (falls back to dark if
+  // nothing saved yet).
+  const savedTheme = localStorage.getItem('seyoul_theme');
+  if(savedTheme === 'light') document.body.classList.add('light-theme');
+  else document.body.classList.remove('light-theme');
   const themeToggle = document.getElementById('themeToggle');
   if(themeToggle){
     themeToggle.addEventListener('click', function(){
       document.body.classList.toggle('light-theme');
+      localStorage.setItem('seyoul_theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
       // Force style recalculation to commit before we read CSS vars / re-render,
       // so the toggle never picks up a stale class/style state.
       void document.body.offsetHeight;
@@ -749,7 +755,7 @@ function chartThemeColors(){
   // gridlines/ticks always match the CURRENT theme the instant renderAll()
   // runs, with no dependency on toggle-handler timing.
   const cs = getComputedStyle(document.body);
-  return { text: cs.getPropertyValue('--text-muted').trim(), grid: cs.getPropertyValue('--border-table').trim() };
+  return { text: cs.getPropertyValue('--text-muted').trim(), grid: cs.getPropertyValue('--chart-grid').trim() };
 }
 
 function renderRevChart(){
@@ -768,10 +774,28 @@ function renderRevChart(){
         { label:'Doanh thu (quy CID)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(74,222,128)', backgroundColor:'rgba(74,222,128,0.12)', fill:true, tension:0.3, pointRadius:2 }
       ]},
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:tc1.text } } },
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ labels:{ color:tc1.text } },
+        tooltip:{
+          mode:'index', intersect:false,
+          callbacks:{
+            title: function(items){ return items.length? ('Ngày: '+dates[items[0].dataIndex]) : ''; },
+            label: function(ctx){ return ctx.dataset.label+': '+fmt(ctx.parsed.y); },
+            afterBody: function(items){
+              if(!items.length) return [];
+              const d = dates[items[0].dataIndex];
+              const cost = costByDate[d]||0, rev = revByDate[d]||0;
+              const cir = rev>0? cost/rev*100 : 0;
+              const roas = cost>0? rev/cost : 0;
+              return ['CIR: '+cir.toFixed(1)+'%', 'ROAS: '+roas.toFixed(2)+'x'];
+            }
+          }
+        }
+      },
       scales:{
-        x:{ ticks:{ color:tc1.text }, grid:{ color:tc1.grid }, border:{ color:tc1.grid } },
-        y:{ ticks:{ color:tc1.text }, grid:{ color:tc1.grid }, border:{ color:tc1.grid } }
+        x:{ ticks:{ color:tc1.text }, grid:{ display:false }, border:{ color:tc1.grid } },
+        y:{ ticks:{ color:tc1.text }, grid:{ color:tc1.grid }, border:{ display:false } }
       }
     }
   });
@@ -822,8 +846,8 @@ function renderTopCid(){
     data:{ labels:rows.map(r=>r.CID), datasets:[{ data:rows.map(r=>Math.round(r[metric])), backgroundColor:'rgb(88,124,255)', borderRadius:4 }] },
     options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
       scales:{
-        x:{ ticks:{ color:tc2.text }, grid:{ color:tc2.grid }, border:{ color:tc2.grid } },
-        y:{ ticks:{ color:tc2.text }, grid:{ color:tc2.grid }, border:{ color:tc2.grid } }
+        x:{ ticks:{ color:tc2.text }, grid:{ color:tc2.grid }, border:{ display:false } },
+        y:{ ticks:{ color:tc2.text }, grid:{ display:false }, border:{ display:false } }
       }
     }
   });
@@ -856,8 +880,8 @@ function renderMbChart(){
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ labels:{ color:tc3.text } } },
       scales:{
-        x:{ ticks:{ autoSkip:false, maxRotation:20, minRotation:0, color:tc3.text }, grid:{ color:tc3.grid }, border:{ color:tc3.grid } },
-        y:{ ticks:{ color:tc3.text }, grid:{ color:tc3.grid }, border:{ color:tc3.grid } }
+        x:{ ticks:{ autoSkip:false, maxRotation:20, minRotation:0, color:tc3.text }, grid:{ display:false }, border:{ display:false } },
+        y:{ ticks:{ color:tc3.text }, grid:{ color:tc3.grid }, border:{ display:false } }
       }
     }
   });
@@ -1085,13 +1109,15 @@ function renderPie(canvasId, labels, values, valueFormat){
   if(!el) return;
   if(pieCharts[canvasId]) pieCharts[canvasId].destroy();
   const total = values.reduce((s,v)=>s+v,0);
+  const pieBorder = getComputedStyle(document.body).getPropertyValue('--bg-sidebar').trim();
+  const pieTc = chartThemeColors();
   pieCharts[canvasId] = new Chart(el, {
     type:'pie',
-    data:{ labels, datasets:[{ data:values, backgroundColor: labels.map((_,i)=>PIE_COLORS[i%PIE_COLORS.length]), borderColor:'rgb(15,19,28)', borderWidth:2 }] },
+    data:{ labels, datasets:[{ data:values, backgroundColor: labels.map((_,i)=>PIE_COLORS[i%PIE_COLORS.length]), borderColor:pieBorder, borderWidth:1 }] },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{
-        legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10} } },
+        legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10}, color:pieTc.text } },
         tooltip:{ callbacks:{ label:function(ctx){
           const v = ctx.parsed;
           const pct = total>0? (v/total*100).toFixed(1) : '0.0';
