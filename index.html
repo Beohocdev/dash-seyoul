@@ -221,7 +221,7 @@
 </head>
 <body>
 
-<div id="devtoolsBlock">Không được đâu cưng, đừng cố gắng làm gì, block rồi nhen !!</div>
+<div id="devtoolsBlock">Không vào Dev tool được đâu cưng, đừng cố gắng làm gì, block rồi nhen !!</div>
 
 <div id="loginGate">
   <div class="loginCard">
@@ -444,13 +444,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 (function(){
-  const savedTheme = localStorage.getItem('seyoul_theme');
-  if(savedTheme === 'light') document.body.classList.add('light-theme');
+  // Always start in dark theme regardless of what was toggled last time.
+  document.body.classList.remove('light-theme');
   const themeToggle = document.getElementById('themeToggle');
   if(themeToggle){
     themeToggle.addEventListener('click', function(){
       document.body.classList.toggle('light-theme');
-      localStorage.setItem('seyoul_theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
       // Force style recalculation to commit before we read CSS vars / re-render,
       // so the toggle never picks up a stale class/style state.
       void document.body.offsetHeight;
@@ -466,8 +465,11 @@
 })();
 
 (function(){
-  let devtoolsOpen = false;
-  const threshold = 160;
+  // Only run this on desktop/PC — on mobile, viewport resizes (address bar,
+  // virtual keyboard) constantly and falsely, so no blocking there at all.
+  const isMobile = window.matchMedia('(max-width: 768px)').matches || navigator.maxTouchPoints > 2;
+  if(isMobile) return;
+
   const blockEl = document.getElementById('devtoolsBlock');
   let hideTimer = null;
 
@@ -477,42 +479,13 @@
     hideTimer = setTimeout(function(){ blockEl.classList.remove('show'); }, 5000);
   }
 
-  function checkDevtools(){
-    const widthGap = window.outerWidth - window.innerWidth > threshold;
-    const heightGap = window.outerHeight - window.innerHeight > threshold;
-    const isOpen = widthGap || heightGap;
-    if(isOpen && !devtoolsOpen){
-      devtoolsOpen = true;
-      showToast();
-    } else if(!isOpen && devtoolsOpen){
-      devtoolsOpen = false;
-    } else if(isOpen && devtoolsOpen && !blockEl.classList.contains('show')){
-      showToast();
-    }
-  }
-  setInterval(checkDevtools, 500);
-  window.addEventListener('resize', checkDevtools);
-
-  setInterval(function(){
-    const start = performance.now();
-    // eslint-disable-next-line no-debugger
-    debugger;
-    const delta = performance.now() - start;
-    if(delta > 100){
-      devtoolsOpen = true;
-      if(!blockEl.classList.contains('show')) showToast();
-    }
-  }, 800);
-
-  document.addEventListener('click', function(){
-    if(devtoolsOpen && !blockEl.classList.contains('show')) showToast();
-  });
-
-  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  // Only trigger the warning on a direct F12 press or right-click —
+  // no more background polling/heuristics that could misfire.
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); showToast(); });
   document.addEventListener('keydown', function(e){
-    if(e.key === 'F12') e.preventDefault();
-    if(e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) e.preventDefault();
-    if(e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase())) e.preventDefault();
+    if(e.key === 'F12'){ e.preventDefault(); showToast(); }
+    if(e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())){ e.preventDefault(); showToast(); }
+    if(e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase())){ e.preventDefault(); showToast(); }
     if((e.ctrlKey || e.metaKey) && e.key.toUpperCase() === 'U') e.preventDefault();
   });
 })();
@@ -730,8 +703,8 @@ function aggOrders(rows){
 function renderKPI(){
   const ads = aggAds(getFilteredAds());
   const ord = aggOrders(getFilteredOrders());
-  const roas = ads.Spend>0? ord.Doanh_thu_matched/ads.Spend:0;
-  const cir = ord.Doanh_thu_matched>0? ads.Spend/ord.Doanh_thu_matched:0;
+  const roas = ads.Spend>0? ord.Doanh_thu/ads.Spend:0;
+  const cir = ord.Doanh_thu>0? ads.Spend/ord.Doanh_thu:0;
   const cvr = (ads.Mess+ads.Lead)>0? ord.MatchedOrderCount/(ads.Mess+ads.Lead):0;
   const aov = ord.OrderCount>0? ord.Doanh_thu/ord.OrderCount:0;
   const cards = [
@@ -904,6 +877,7 @@ function cidDetailBlockHtml(r){
 }
 
 function cirBadge(cir, revenue, spend){
+  if((spend||0) < 1000000) return '';
   if((spend||0) <= 0 && (revenue||0) <= 0) return `<span class="badge-cir badge-cir-testing">Trống</span>`;
   const pct = (cir||0)*100;
   if((revenue||0)<=0 || pct===0) return `<span class="badge-cir badge-cir-neutral">Cần xem xét</span>`;
@@ -1034,6 +1008,7 @@ function renderSidebarSpendKpi(){
 }
 
 function cidStatusLabel(r){
+  if((r.Spend||0) < 1000000) return '';
   if((r.Spend||0) <= 0 && (r.Doanh_thu||0) <= 0) return 'Trống';
   const pct = (r.CIR||0)*100;
   if((r.Doanh_thu||0)<=0 || pct===0) return 'Cần xem xét';
