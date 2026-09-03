@@ -212,6 +212,8 @@
   .subTable { font-size:12px; margin:14px 0 0; padding-top:14px; border-top:1px solid var(--border-panel); }
   .subTable .title { font-size:11px; text-transform:uppercase; color:rgb(120,128,145); margin-bottom:6px; }
   .miniList { max-height:220px; overflow-y:auto; }
+  .ordersTable { table-layout:fixed; width:100%; }
+  .ordersTable td { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
   #appRoot { transition: filter .25s ease; }
   #appRoot.gated { filter: blur(8px) brightness(0.9) saturate(1.15); pointer-events:none; user-select:none; }
@@ -930,8 +932,10 @@ function cidDetailBlockHtml(r){
   let ordersHtml = `<div class="subTable"><div class="title">Đơn hàng (${orders.length})</div>`;
   if(orders.length===0){ ordersHtml += `Không có đơn trong phạm vi lọc`; }
   else {
-    ordersHtml += `<div class="miniList"><table><tr><td class="muted">Ngày</td><td class="muted">Mã vận đơn</td><td class="muted">SĐT</td><td class="muted" style="text-align:right">Doanh thu</td><td class="muted">Trạng thái</td><td class="muted">Kênh</td><td class="muted">Ad ID</td></tr>` +
-      orders.map(o=>`<tr><td>${o.date}</td><td>${o.OrderId}</td><td>${o.Phone}${copyBtnHtml(o.Phone)}</td><td style="text-align:right">${fmt(o.Revenue)}</td><td>${o.Status||'-'}</td><td>${o.Channel||'-'}</td><td>${o.AdId||'-'}</td></tr>`).join('') + `</table></div>`;
+    ordersHtml += `<div class="miniList"><table class="ordersTable"><colgroup>` +
+      `<col style="width:11%"><col style="width:8%"><col style="width:14%"><col style="width:14%"><col style="width:13%"><col style="width:13%"><col style="width:15%"><col style="width:12%">` +
+      `</colgroup><tr><td class="muted">Ngày</td><td class="muted">Giờ</td><td class="muted">Mã vận đơn</td><td class="muted">SĐT</td><td class="muted" style="text-align:right">Doanh thu</td><td class="muted">Trạng thái</td><td class="muted">Kênh</td><td class="muted">Ad ID</td></tr>` +
+      orders.map(o=>`<tr><td>${o.date}</td><td>${o.time||'-'}</td><td>${o.OrderId}</td><td>${o.Phone}${copyBtnHtml(o.Phone)}</td><td style="text-align:right">${fmt(o.Revenue)}</td><td>${o.Status||'-'}</td><td>${o.Channel||'-'}</td><td>${o.AdId||'-'}</td></tr>`).join('') + `</table></div>`;
   }
   ordersHtml += `</div>`;
   return `<div class="detailCluster">` + detailGridHtml([
