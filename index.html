@@ -167,6 +167,10 @@
   .searchWrap { position:relative; display:inline-flex; align-items:center; }
   .searchIconBtn { background:none; border:1px solid rgb(48,56,72); color:var(--text-muted); border-radius:8px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; }
   .searchIconBtn:hover { color:#fff; border-color:rgb(88,124,255); }
+  .exportBtn { background:none; border:1px solid rgb(48,56,72); color:var(--text-muted); border-radius:8px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; margin-left:6px; }
+  .exportBtn:hover { color:#fff; border-color:rgb(34,197,94); background:rgba(34,197,94,0.12); }
+  body.light-theme .exportBtn { border-color:rgb(200,206,220); color:rgb(70,78,96); background:rgb(242,244,248); }
+  body.light-theme .exportBtn:hover { color:#fff; background:rgb(22,163,74); border-color:rgb(22,163,74); }
   .searchInput { width:0; opacity:0; padding:0; border:1px solid rgb(48,56,72); background:rgb(15,19,28); color:#fff; border-radius:8px; font-size:12px; margin-left:0; transition:width .18s ease, opacity .18s ease, padding .18s ease, margin-left .18s ease; }
   .searchInput.open { width:180px; opacity:1; padding:6px 10px; margin-left:6px; }
   .pagBar { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:12px; }
@@ -360,6 +364,7 @@
             <button type="button" class="searchIconBtn" id="boardA-searchBtn" title="Tìm theo CID">🔍</button>
             <input type="text" class="searchInput" id="boardA-searchInput" placeholder="Nhập/dán CID...">
           </span>
+          <button type="button" class="exportBtn" id="boardA-exportBtn" title="Xuất Excel">📥</button>
           <span>Lọc theo MC:</span>
           <select id="boardA-mcFilter"></select>
           <span>Lọc theo trạng thái:</span>
@@ -381,6 +386,7 @@
             <button type="button" class="searchIconBtn" id="boardB-searchBtn" title="Tìm theo CID">🔍</button>
             <input type="text" class="searchInput" id="boardB-searchInput" placeholder="Nhập/dán CID...">
           </span>
+          <button type="button" class="exportBtn" id="boardB-exportBtn" title="Xuất Excel">📥</button>
           <span>Lọc theo nền tảng:</span>
           <select id="boardB-platformFilter"></select>
           <span>Lọc theo trạng thái:</span>
@@ -402,6 +408,7 @@
             <button type="button" class="searchIconBtn" id="boardC-searchBtn" title="Tìm theo CID">🔍</button>
             <input type="text" class="searchInput" id="boardC-searchInput" placeholder="Nhập/dán CID...">
           </span>
+          <button type="button" class="exportBtn" id="boardC-exportBtn" title="Xuất Excel">📥</button>
           <span>Lọc theo MB:</span>
           <select id="boardC-mbFilter"></select>
           <span>Lọc theo MC:</span>
@@ -425,6 +432,7 @@
             <button type="button" class="searchIconBtn" id="boardD-searchBtn" title="Tìm theo CID">🔍</button>
             <input type="text" class="searchInput" id="boardD-searchInput" placeholder="Nhập/dán CID...">
           </span>
+          <button type="button" class="exportBtn" id="boardD-exportBtn" title="Xuất Excel">📥</button>
           <span>Lọc theo MB:</span>
           <select id="boardD-mbFilter"></select>
           <span>Lọc theo MC:</span>
@@ -442,6 +450,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 (function(){
   // Always start in dark theme regardless of what was toggled last time.
@@ -955,6 +964,8 @@ function renderCidRowsHtml(rows, idPrefix, allRows){
   return html;
 }
 
+const boardRowsCache = { boardA: [], boardB: [], boardC: [], boardD: [] };
+
 function renderBoardA(){
   let rows = cidUniverse();
   if(boardA.mb!=='all') rows = rows.filter(r=>r.MB===boardA.mb);
@@ -963,6 +974,7 @@ function renderBoardA(){
   if(boardA.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardA.search.trim().toLowerCase()));
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
+  boardRowsCache.boardA = rows;
   const { pageRows, totalPages } = paginate(rows, boardA);
   document.getElementById('boardA-body').innerHTML = renderCidRowsHtml(pageRows, 'boardA', rows);
   wireExpand('#boardA-body');
@@ -978,6 +990,7 @@ function renderBoardB(){
   if(boardB.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardB.search.trim().toLowerCase()));
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
+  boardRowsCache.boardB = rows;
   const { pageRows, totalPages } = paginate(rows, boardB);
   document.getElementById('boardB-body').innerHTML = renderCidRowsHtml(pageRows, 'boardB', rows);
   wireExpand('#boardB-body');
@@ -994,6 +1007,7 @@ function renderBoardC(){
   if(boardC.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardC.search.trim().toLowerCase()));
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
+  boardRowsCache.boardC = rows;
   const { pageRows, totalPages } = paginate(rows, boardC);
   document.getElementById('boardC-body').innerHTML = renderCidRowsHtml(pageRows, 'boardC', rows);
   wireExpand('#boardC-body');
@@ -1010,12 +1024,42 @@ function renderBoardD(){
   if(boardD.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardD.search.trim().toLowerCase()));
   rows = applyGlobalCidFilter(rows);
   rows.sort((a,b)=>b.ROAS-a.ROAS);
+  boardRowsCache.boardD = rows;
   const { pageRows, totalPages } = paginate(rows, boardD);
   document.getElementById('boardD-body').innerHTML = renderCidRowsHtml(pageRows, 'boardD', rows);
   wireExpand('#boardD-body');
   document.getElementById('boardD-pag').innerHTML = pagHtml(boardD, totalPages, 'boardD');
   wirePagButtons('boardD', boardD, renderBoardD);
 }
+
+function exportBoardToExcel(boardKey, fileLabel){
+  const rows = boardRowsCache[boardKey] || [];
+  if(!window.XLSX){ alert('Thư viện xuất Excel chưa tải xong, thử lại sau vài giây.'); return; }
+  const data = rows.map(r=>({
+    'CID': r.CID,
+    'MB Pic': r.MB,
+    'MC Pic': r.MC,
+    'Sản phẩm': r.Product||'',
+    'Content Type': r.ContentType||'',
+    'TA Content': r.TAContent||'',
+    'Link Video': r.LinkVideo||'',
+    'Chi phí': r.Spend,
+    'Doanh thu': r.Doanh_thu,
+    'ROAS': r.ROAS,
+    'CIR': r.CIR,
+    'Trạng thái': cidStatusLabel(r)
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, fileLabel.slice(0,31));
+  const dateStr = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `${fileLabel}_${dateStr}.xlsx`);
+}
+
+document.getElementById('boardA-exportBtn').addEventListener('click', ()=>exportBoardToExcel('boardA','Media_Buyer'));
+document.getElementById('boardB-exportBtn').addEventListener('click', ()=>exportBoardToExcel('boardB','Media_Creator'));
+document.getElementById('boardC-exportBtn').addEventListener('click', ()=>exportBoardToExcel('boardC','Nen_Tang'));
+document.getElementById('boardD-exportBtn').addEventListener('click', ()=>exportBoardToExcel('boardD','San_Pham'));
 
 function renderSidebarSpendKpi(){
   const rows = cidUniverse();
