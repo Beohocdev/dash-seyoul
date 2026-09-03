@@ -328,6 +328,12 @@
     <p class="label">Trạng thái CID</p>
     <div style="position:relative;width:100%;height:180px"><canvas id="pieStatus"></canvas></div>
 
+    <p class="label">Nhóm ROAS theo SL CID</p>
+    <div style="position:relative;width:100%;height:180px"><canvas id="pieRoasGroup"></canvas></div>
+
+    <p class="label">Chi tiêu theo Phân loại ROAS</p>
+    <div style="position:relative;width:100%;height:180px"><canvas id="pieSpendByRoasGroup"></canvas></div>
+
     <p class="label">Doanh thu CID theo MC</p>
     <div style="position:relative;width:100%;height:180px"><canvas id="pieRevByMc"></canvas></div>
 
@@ -1141,12 +1147,15 @@ function renderPie(canvasId, labels, values, valueFormat){
       responsive:true, maintainAspectRatio:false,
       plugins:{
         legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10}, color:pieTc.text } },
-        tooltip:{ callbacks:{ label:function(ctx){
-          const v = ctx.parsed;
-          const pct = total>0? (v/total*100).toFixed(1) : '0.0';
-          const vLabel = valueFormat==='money'? fmt(v) : (valueFormat==='ratio'? fmtX(v) : fmtN(v));
-          return ctx.label+': '+vLabel+' ('+pct+'%)';
-        } } }
+        tooltip:{ callbacks:{
+          title:function(){ return ''; },
+          label:function(ctx){
+            const v = ctx.parsed;
+            const pct = total>0? (v/total*100).toFixed(1) : '0.0';
+            const vLabel = valueFormat==='money'? fmt(v) : (valueFormat==='ratio'? fmtX(v) : fmtN(v));
+            return vLabel+' ('+pct+'%)';
+          }
+        } }
       }
     }
   });
@@ -1165,6 +1174,28 @@ function renderSidebarPies(){
   const statusCount = {};
   rows.forEach(r=>{ const s = cidStatusLabel(r); statusCount[s] = (statusCount[s]||0)+1; });
   renderPie('pieStatus', Object.keys(statusCount), Object.values(statusCount), 'count');
+
+  // 1b. Nhom ROAS theo SL CID
+  const roasBuckets = { 'ROAS >= 2.1x': 0, '1.3x - 2.1x': 0, '0 - 1.3x': 0, 'ROAS = 0': 0 };
+  rows.forEach(r=>{
+    const roas = r.ROAS||0;
+    if(roas===0) roasBuckets['ROAS = 0']++;
+    else if(roas>=2.1) roasBuckets['ROAS >= 2.1x']++;
+    else if(roas>=1.3) roasBuckets['1.3x - 2.1x']++;
+    else roasBuckets['0 - 1.3x']++;
+  });
+  renderPie('pieRoasGroup', Object.keys(roasBuckets), Object.values(roasBuckets), 'count');
+
+  // 1c. Chi tieu theo Phan loai ROAS
+  const spendByRoasGroup = { 'ROAS >= 2.1x': 0, '1.3x - 2.1x': 0, '0 - 1.3x': 0, 'ROAS = 0': 0 };
+  rows.forEach(r=>{
+    const roas = r.ROAS||0;
+    if(roas===0) spendByRoasGroup['ROAS = 0'] += r.Spend;
+    else if(roas>=2.1) spendByRoasGroup['ROAS >= 2.1x'] += r.Spend;
+    else if(roas>=1.3) spendByRoasGroup['1.3x - 2.1x'] += r.Spend;
+    else spendByRoasGroup['0 - 1.3x'] += r.Spend;
+  });
+  renderPie('pieSpendByRoasGroup', Object.keys(spendByRoasGroup), Object.values(spendByRoasGroup), 'money');
 
   // 2. Doanh thu CID theo MC
   const revByMc = groupSum(rows, r=>r.MC||'Không xác định', r=>r.Doanh_thu);
