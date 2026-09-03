@@ -98,10 +98,44 @@
   .subTable { font-size:12px; margin:0 0 10px; background:rgb(12,16,24); border-radius:8px; padding:8px 12px; }
   .subTable .title { font-size:11px; text-transform:uppercase; color:rgb(120,128,145); margin-bottom:6px; }
   .miniList { max-height:220px; overflow-y:auto; }
+
+  #appRoot { transition: filter .25s ease; }
+  #appRoot.gated { filter: blur(18px) brightness(0.55); pointer-events:none; user-select:none; }
+
+  #loginGate { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; background:rgba(6,8,13,0.55); }
+  #loginGate.hidden { display:none; }
+  .loginCard { width:340px; background:rgb(17,22,32); border:1px solid rgb(40,47,63); border-radius:16px; padding:32px 28px; box-shadow:0 20px 60px rgba(0,0,0,0.5); text-align:center; }
+  .loginCard .logo { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; font-size:19px; font-weight:700; color:#fff; }
+  .loginCard .sub { font-size:12.5px; color:rgb(148,157,176); margin:0 0 22px; }
+  .loginCard input { width:100%; background:rgb(22,27,38); color:#fff; border:1px solid rgb(40,47,63); border-radius:8px; padding:11px 12px; font-size:13.5px; margin-bottom:12px; }
+  .loginCard input:focus { border-color:rgb(88,124,255); }
+  .loginCard button { width:100%; background:rgb(37,71,201); color:#fff; border:none; border-radius:8px; padding:11px; font-size:13.5px; font-weight:600; cursor:pointer; }
+  .loginCard button:disabled { opacity:0.5; cursor:not-allowed; }
+  .loginCard button:hover:not(:disabled) { background:rgb(48,84,220); }
+  .loginErr { color:rgb(248,113,113); font-size:12px; margin:-2px 0 12px; min-height:14px; }
+
+  #devtoolsBlock { position:fixed; inset:0; z-index:99999; background:#000; color:#fff; display:none; align-items:center; justify-content:center; font-size:22px; font-weight:700; text-align:center; padding:20px; font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
+  #devtoolsBlock.show { display:flex; }
 </style>
 </head>
 <body>
 
+<div id="devtoolsBlock">Không được đâu cưng, đừng cố gắng làm gì, block rồi nhen !!</div>
+
+<div id="loginGate">
+  <div class="loginCard">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 15a5 5 0 0 1 10 0"></path><path d="M12 15l2.2-2.6"></path></svg>
+      Seyoul SG Dashboard
+    </div>
+    <p class="sub">Nhập email nội bộ (@tvhs.asia) để xem dữ liệu</p>
+    <input type="email" id="gateEmailInput" placeholder="email@tvhs.asia" autocomplete="email">
+    <div class="loginErr" id="gateErr"></div>
+    <button id="gateSubmitBtn">Đăng nhập</button>
+  </div>
+</div>
+
+<div id="appRoot" class="gated">
 <div class="header">
   <div class="title">
     <span style="display:inline-flex;align-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 15a5 5 0 0 1 10 0"></path><path d="M12 15l2.2-2.6"></path><line x1="6" y1="9" x2="6.6" y2="9.6"></line><line x1="18" y1="9" x2="17.4" y2="9.6"></line><line x1="12" y1="7.5" x2="12" y2="8.3"></line><line x1="16" y1="6" x2="15" y2="7"></line><line x1="8" y1="6" x2="9" y2="7"></line><rect x="15.5" y="6" width="4.5" height="1.4" rx="0.5"></rect><circle cx="21" cy="9" r="0.6" fill="currentColor" stroke="none"></circle><rect x="4" y="16.5" width="1.4" height="2" fill="currentColor" stroke="none"></rect><rect x="6" y="15" width="1.4" height="3.5" fill="currentColor" stroke="none"></rect><rect x="8" y="14" width="1.4" height="4.5" fill="currentColor" stroke="none"></rect></svg></span> Dashboard Performance - Seyoul SG
@@ -290,33 +324,100 @@
   </div>
 </div>
 
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-(async function(){
+(function(){
+  let devtoolsOpen = false;
+  const threshold = 160;
+  const blockEl = document.getElementById('devtoolsBlock');
+  function checkDevtools(){
+    const widthGap = window.outerWidth - window.innerWidth > threshold;
+    const heightGap = window.outerHeight - window.innerHeight > threshold;
+    const isOpen = widthGap || heightGap;
+    if(isOpen !== devtoolsOpen){
+      devtoolsOpen = isOpen;
+      blockEl.classList.toggle('show', devtoolsOpen);
+    }
+  }
+  setInterval(checkDevtools, 500);
+  window.addEventListener('resize', checkDevtools);
+
+  let devtoolsTimerFired = false;
+  setInterval(function(){
+    const start = performance.now();
+    // eslint-disable-next-line no-debugger
+    debugger;
+    const delta = performance.now() - start;
+    devtoolsTimerFired = delta > 100;
+    blockEl.classList.toggle('show', devtoolsOpen || devtoolsTimerFired);
+  }, 800);
+
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'F12') e.preventDefault();
+    if(e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) e.preventDefault();
+    if(e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase())) e.preventDefault();
+    if((e.ctrlKey || e.metaKey) && e.key.toUpperCase() === 'U') e.preventDefault();
+  });
+})();
+
 const API_URL = 'https://dash-seyoul-api.nguyenkhacquan3194.workers.dev';
-const params = new URLSearchParams(location.search);
-let VIEWER_EMAIL = (params.get('email') || localStorage.getItem('seyoul_viewer_email') || '').trim();
-if(!VIEWER_EMAIL){ VIEWER_EMAIL = (prompt('Nhập email đăng nhập của bạn (@tvhs.asia):') || '').trim(); }
-if(VIEWER_EMAIL) localStorage.setItem('seyoul_viewer_email', VIEWER_EMAIL);
+const appRoot = document.getElementById('appRoot');
+const loginGate = document.getElementById('loginGate');
+const gateEmailInput = document.getElementById('gateEmailInput');
+const gateSubmitBtn = document.getElementById('gateSubmitBtn');
+const gateErr = document.getElementById('gateErr');
 
-document.body.insertAdjacentHTML('afterbegin', '<div id="loadingOverlay" style="position:fixed;inset:0;background:rgb(10,13,20);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;z-index:9999">Đang tải dữ liệu...</div>');
-
-let DATA = { ads_daily:[], orders_all:[], ref_map:{}, meta:{role:'denied'} };
-try {
-  const resp = await fetch(API_URL + '?email=' + encodeURIComponent(VIEWER_EMAIL), { cache:'no-store' });
-  DATA = await resp.json();
-} catch(err) {
-  document.getElementById('loadingOverlay').innerHTML = 'Không tải được dữ liệu. Kiểm tra kết nối hoặc URL API. (' + err.message + ')';
-  return;
+function getSavedEmail(){
+  const params = new URLSearchParams(location.search);
+  return (params.get('email') || localStorage.getItem('seyoul_viewer_email') || '').trim();
 }
 
-if(!DATA.meta || DATA.meta.role === 'denied'){
-  document.getElementById('loadingOverlay').innerHTML = '<div style="text-align:center"><div style="font-size:20px;font-weight:600;margin-bottom:8px">Không có quyền truy cập</div><div style="color:rgb(148,157,176)">Email <b>'+ (VIEWER_EMAIL||'(trống)') +'</b> chưa được cấp quyền xem dashboard này.<br>Liên hệ Admin để được thêm vào danh sách.</div></div>';
-  return;
+async function tryLogin(email){
+  gateErr.textContent = '';
+  gateSubmitBtn.disabled = true;
+  gateSubmitBtn.textContent = 'Đang kiểm tra...';
+  let data;
+  try {
+    const resp = await fetch(API_URL + '?email=' + encodeURIComponent(email), { cache:'no-store' });
+    data = await resp.json();
+  } catch(err) {
+    gateErr.textContent = 'Không kết nối được máy chủ. Thử lại.';
+    gateSubmitBtn.disabled = false;
+    gateSubmitBtn.textContent = 'Đăng nhập';
+    return null;
+  }
+  if(!data.meta || data.meta.role === 'denied'){
+    gateErr.textContent = 'Email này chưa được cấp quyền truy cập.';
+    gateSubmitBtn.disabled = false;
+    gateSubmitBtn.textContent = 'Đăng nhập';
+    localStorage.removeItem('seyoul_viewer_email');
+    return null;
+  }
+  localStorage.setItem('seyoul_viewer_email', email);
+  return data;
 }
 
-document.getElementById('loadingOverlay').remove();
+gateSubmitBtn.addEventListener('click', async function(){
+  const email = gateEmailInput.value.trim();
+  if(!email){ gateErr.textContent = 'Vui lòng nhập email.'; return; }
+  const data = await tryLogin(email);
+  if(data){ loginGate.classList.add('hidden'); appRoot.classList.remove('gated'); runDashboard(email, data); }
+});
+gateEmailInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') gateSubmitBtn.click(); });
 
+(async function boot(){
+  const saved = getSavedEmail();
+  if(saved){
+    gateEmailInput.value = saved;
+    const data = await tryLogin(saved);
+    if(data){ loginGate.classList.add('hidden'); appRoot.classList.remove('gated'); runDashboard(saved, data); return; }
+  }
+})();
+
+async function runDashboard(VIEWER_EMAIL, DATA){
 const ADS = DATA.ads_daily;
 const ORDERS = DATA.orders_all;
 const REF = DATA.ref_map;
@@ -1020,7 +1121,7 @@ Chart.defaults.borderColor = 'rgb(24,30,42)';
 renderAll();
 refreshAllTabUnderlines();
 setTimeout(refreshAllTabUnderlines, 50);
-})();
+}
 </script>
 </body>
 </html>
