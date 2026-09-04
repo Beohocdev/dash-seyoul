@@ -109,7 +109,7 @@
   .dateMenu { position:absolute; top:40px; right:0; background:var(--bg-elevated); border:1px solid var(--border-input); border-radius:10px; width:230px; padding:6px; z-index:20; display:none; }
   .dateMenu.open { display:block; }
   .dateItem { padding:9px 12px; border-radius:7px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; }
-  .dateItem:hover { background:rgb(28,34,48); }
+  .dateItem:hover { background:rgb(37,71,201); color:#fff; font-weight:600; }
   .dateItem.active { background:rgb(37,71,201); color:#fff; }
   .calendarBox { position:absolute; top:40px; right:0; background:var(--bg-elevated); border:1px solid var(--border-input); border-radius:10px; padding:16px; z-index:21; display:none; }
   .calendarBox.open { display:flex; gap:24px; }
@@ -130,7 +130,7 @@
   .sidebar p.label { font-size:11px; color:rgb(110,118,135); text-transform:uppercase; margin:14px 6px 6px; white-space:nowrap; }
   .sbitem { padding:9px 10px; border-radius:8px; font-size:13px; cursor:pointer; margin-bottom:2px; white-space:nowrap; user-select:none; }
   .sbitem:hover { background:var(--border-table); }
-  .sbitem.active { background:rgb(37,71,201); color:#fff; }
+  .sbitem.active { background:rgb(234,88,12); color:#fff; }
   .toggleBtn { width:22px; height:44px; background:var(--bg-input); border:1px solid var(--border-input); border-radius:0 8px 8px 0; color:var(--text-muted); cursor:pointer; align-self:flex-start; margin-top:20px; flex-shrink:0; position:sticky; top:calc(var(--header-h, 64px) + 20px); z-index:5; }
   .main { flex:1; min-width:0; padding:20px; }
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
@@ -229,9 +229,9 @@
   #loginGate { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; background:rgba(6,8,13,0.55); }
   #loginGate.hidden { display:none; }
   .loginCard { width:340px; background:var(--bg-panel); border:1px solid var(--border-input); border-radius:16px; padding:32px 28px; box-shadow:0 20px 60px rgba(0,0,0,0.5); text-align:center; }
-  .loginCard .logo { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; font-size:19px; font-weight:700; color:#fff; }
+  .loginCard .logo { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; font-size:19px; font-weight:700; color:var(--text-primary); }
   .loginCard .sub { font-size:12.5px; color:var(--text-muted); margin:0 0 22px; }
-  .loginCard input { width:100%; background:var(--bg-input); color:#fff; border:1px solid var(--border-input); border-radius:8px; padding:11px 12px; font-size:13.5px; margin-bottom:12px; }
+  .loginCard input { width:100%; background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-input); border-radius:8px; padding:11px 12px; font-size:13.5px; margin-bottom:12px; }
   .loginCard input:focus { border-color:rgb(88,124,255); }
   .loginCard button { width:100%; background:rgb(37,71,201); color:#fff; border:none; border-radius:8px; padding:11px; font-size:13.5px; font-weight:600; cursor:pointer; }
   .loginCard button:disabled { opacity:0.5; cursor:not-allowed; }
@@ -287,7 +287,7 @@
     <div style="position:relative">
       <div class="dateBtn" id="dateBtnToggle">Hôm nay <span>&#9662;</span></div>
       <div class="dateMenu" id="dateMenu">
-        <div class="dateItem active" data-v="today">Hôm nay <span>&#10003;</span></div>
+        <div class="dateItem active" data-v="today">Hôm nay</div>
         <div class="dateItem" data-v="yesterday">Hôm qua</div>
         <div class="dateItem" data-v="3d">3 ngày trước</div>
         <div class="dateItem" data-v="7d">7 ngày trước</div>
@@ -845,8 +845,8 @@ function renderRevChart(){
     type:'line',
     data:{ labels:dates.map(d=>d.slice(5)),
       datasets:[
-        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(234,88,12)', backgroundColor:'rgba(234,88,12,0.14)', fill:true, tension:0.3, pointRadius:2 },
-        { label:'Doanh thu tổng (mọi trạng thái)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(22,163,74)', backgroundColor:'rgba(22,163,74,0.14)', fill:true, tension:0.3, pointRadius:2 }
+        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(234,88,12)', backgroundColor:'rgba(234,88,12,0.14)', fill:false, tension:0.3, pointRadius:2 },
+        { label:'Doanh thu tổng (mọi trạng thái)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(22,163,74)', backgroundColor:'rgba(22,163,74,0.14)', fill:false, tension:0.3, pointRadius:2 }
       ]},
     options:{ responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
@@ -1154,12 +1154,13 @@ function wireBoardChartToggle(boardKey){
 
 function renderBoardA(){
   boardChartScope.boardA = null;
-  let rows = cidUniverse();
-  if(boardA.mb!=='all') rows = rows.filter(r=>r.MB===boardA.mb);
-  if(boardA.mc!=='all') rows = rows.filter(r=>r.MC===boardA.mc);
-  if(boardA.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardA.status);
-  if(boardA.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardA.search.trim().toLowerCase()));
-  rows = applyGlobalCidFilter(rows);
+  let baseRows = cidUniverse();
+  if(boardA.mb!=='all') baseRows = baseRows.filter(r=>r.MB===boardA.mb);
+  if(boardA.mc!=='all') baseRows = baseRows.filter(r=>r.MC===boardA.mc);
+  if(boardA.search.trim()) baseRows = baseRows.filter(r=>r.CID.toLowerCase().includes(boardA.search.trim().toLowerCase()));
+  baseRows = applyGlobalCidFilter(baseRows);
+  buildStatusOptions(boardAStatusSelect, STATUS_TIERS, 'Tất cả', computeStatusCounts(baseRows));
+  let rows = boardA.status!=='all' ? baseRows.filter(r=>cidStatusLabel(r)===boardA.status) : baseRows;
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   boardRowsCache.boardA = rows;
   const { pageRows, totalPages } = paginate(rows, boardA);
@@ -1173,11 +1174,12 @@ function renderBoardA(){
 function renderBoardB(){
   boardChartScope.boardB = null;
   const kenh = boardB.platform!=='all' ? boardB.platform : undefined;
-  let rows = cidUniverse(kenh);
-  if(boardB.mc!=='all') rows = rows.filter(r=>r.MC===boardB.mc);
-  if(boardB.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardB.status);
-  if(boardB.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardB.search.trim().toLowerCase()));
-  rows = applyGlobalCidFilter(rows);
+  let baseRows = cidUniverse(kenh);
+  if(boardB.mc!=='all') baseRows = baseRows.filter(r=>r.MC===boardB.mc);
+  if(boardB.search.trim()) baseRows = baseRows.filter(r=>r.CID.toLowerCase().includes(boardB.search.trim().toLowerCase()));
+  baseRows = applyGlobalCidFilter(baseRows);
+  buildStatusOptions(boardBStatusSelect, STATUS_TIERS, 'Tất cả', computeStatusCounts(baseRows));
+  let rows = boardB.status!=='all' ? baseRows.filter(r=>cidStatusLabel(r)===boardB.status) : baseRows;
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   boardRowsCache.boardB = rows;
   const { pageRows, totalPages } = paginate(rows, boardB);
@@ -1191,12 +1193,13 @@ function renderBoardB(){
 function renderBoardC(){
   boardChartScope.boardC = null;
   const kenh = boardC.kenh!=='all' ? boardC.kenh : undefined;
-  let rows = cidUniverse(kenh);
-  if(boardC.mb!=='all') rows = rows.filter(r=>r.MB===boardC.mb);
-  if(boardC.mc!=='all') rows = rows.filter(r=>r.MC===boardC.mc);
-  if(boardC.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardC.status);
-  if(boardC.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardC.search.trim().toLowerCase()));
-  rows = applyGlobalCidFilter(rows);
+  let baseRows = cidUniverse(kenh);
+  if(boardC.mb!=='all') baseRows = baseRows.filter(r=>r.MB===boardC.mb);
+  if(boardC.mc!=='all') baseRows = baseRows.filter(r=>r.MC===boardC.mc);
+  if(boardC.search.trim()) baseRows = baseRows.filter(r=>r.CID.toLowerCase().includes(boardC.search.trim().toLowerCase()));
+  baseRows = applyGlobalCidFilter(baseRows);
+  buildStatusOptions(boardCStatusSelect, STATUS_TIERS, 'Tất cả', computeStatusCounts(baseRows));
+  let rows = boardC.status!=='all' ? baseRows.filter(r=>cidStatusLabel(r)===boardC.status) : baseRows;
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   boardRowsCache.boardC = rows;
   const { pageRows, totalPages } = paginate(rows, boardC);
@@ -1209,13 +1212,14 @@ function renderBoardC(){
 
 function renderBoardD(){
   boardChartScope.boardD = null;
-  let rows = cidUniverse();
-  if(boardD.product!=='all') rows = rows.filter(r=>r.Product===boardD.product);
-  if(boardD.mb!=='all') rows = rows.filter(r=>r.MB===boardD.mb);
-  if(boardD.mc!=='all') rows = rows.filter(r=>r.MC===boardD.mc);
-  if(boardD.status!=='all') rows = rows.filter(r=>cidStatusLabel(r)===boardD.status);
-  if(boardD.search.trim()) rows = rows.filter(r=>r.CID.toLowerCase().includes(boardD.search.trim().toLowerCase()));
-  rows = applyGlobalCidFilter(rows);
+  let baseRows = cidUniverse();
+  if(boardD.product!=='all') baseRows = baseRows.filter(r=>r.Product===boardD.product);
+  if(boardD.mb!=='all') baseRows = baseRows.filter(r=>r.MB===boardD.mb);
+  if(boardD.mc!=='all') baseRows = baseRows.filter(r=>r.MC===boardD.mc);
+  if(boardD.search.trim()) baseRows = baseRows.filter(r=>r.CID.toLowerCase().includes(boardD.search.trim().toLowerCase()));
+  baseRows = applyGlobalCidFilter(baseRows);
+  buildStatusOptions(boardDStatusSelect, STATUS_TIERS, 'Tất cả', computeStatusCounts(baseRows));
+  let rows = boardD.status!=='all' ? baseRows.filter(r=>cidStatusLabel(r)===boardD.status) : baseRows;
   rows.sort((a,b)=>b.ROAS-a.ROAS);
   boardRowsCache.boardD = rows;
   const { pageRows, totalPages } = paginate(rows, boardD);
@@ -1435,12 +1439,33 @@ function buildOptions(selectEl, values, allLabel){
   selectEl.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v=>`<option value="${v}">${v}</option>`).join('');
 }
 
-function buildStatusOptions(selectEl, tiers, allLabel){
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildStatusOptions(selectEl, tiers, allLabel, counts){
+  const prevValue = selectEl.value || 'all';
   const groups = tiers.map(tier=>{
-    const opts = tier.items.map(it=>`<option value="${it.value}">${it.text}</option>`).join('');
-    return `<optgroup label="${tier.label}">${opts}</optgroup>`;
+    const opts = tier.items.map(it=>{
+      const text = counts ? (it.text + ' (' + (counts[it.value]||0) + ')') : it.text;
+      return `<option value="${escapeHtml(it.value)}">${escapeHtml(text)}</option>`;
+    }).join('');
+    return `<optgroup label="${escapeHtml(tier.label)}">${opts}</optgroup>`;
   }).join('');
-  selectEl.innerHTML = `<option value="all">${allLabel}</option>` + groups;
+  const allText = counts ? (allLabel + ' (' + (counts.all||0) + ')') : allLabel;
+  selectEl.innerHTML = `<option value="all">${escapeHtml(allText)}</option>` + groups;
+  selectEl.value = prevValue;
+}
+
+function computeStatusCounts(rows){
+  const counts = { all: rows.length };
+  STATUS_LIST.forEach(s=>{ counts[s] = 0; });
+  rows.forEach(r=>{
+    const s = cidStatusLabel(r);
+    if(counts[s]===undefined) counts[s] = 0;
+    counts[s]++;
+  });
+  return counts;
 }
 
 // ---- Board A: theo Media Buyer ----
@@ -1585,14 +1610,21 @@ window.addEventListener('resize', refreshAllTabUnderlines);
 
 const dateBtn = document.getElementById('dateBtnToggle'), dateMenu = document.getElementById('dateMenu'), calBox = document.getElementById('calendarBox');
 dateBtn.addEventListener('click', ()=>{ dateMenu.classList.toggle('open'); calBox.classList.remove('open'); });
+function fmtDShort(d){ return d.getUTCDate() + '/' + (d.getUTCMonth()+1); }
+function dateBtnLabel(label, s, en){
+  const sameDay = s.getTime()===en.getTime();
+  const rangeText = sameDay ? fmtDShort(s) : (fmtDShort(s) + ' - ' + fmtDShort(en));
+  return label + ' (' + rangeText + ')';
+}
+
 dateMenu.addEventListener('click', (e)=>{
   const it = e.target.closest('.dateItem'); if(!it) return;
   if(it.dataset.v === 'custom'){ dateMenu.classList.remove('open'); renderCalendar(); calBox.classList.add('open'); return; }
-  document.querySelectorAll('.dateItem').forEach(x=>{ x.classList.remove('active'); x.innerHTML = x.innerHTML.replace(' <span>&#10003;</span>',''); });
-  it.classList.add('active'); it.innerHTML += ' <span>&#10003;</span>';
-  const label = it.textContent.replace('✓','').trim();
-  dateBtn.firstChild.textContent = label + ' ';
+  document.querySelectorAll('.dateItem').forEach(x=>{ x.classList.remove('active'); });
+  it.classList.add('active');
+  const label = it.textContent.trim();
   const [s,en] = computeRange(it.dataset.v);
+  dateBtn.firstChild.textContent = dateBtnLabel(label, s, en) + ' ';
   state.start = s; state.end = en; state.presetLabel = label;
   dateMenu.classList.remove('open');
   renderAll();
@@ -1635,7 +1667,7 @@ function renderCalendar(){
           const fmtD = d => String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0');
           const rangeLabel = fmtD(state.start) + ' - ' + fmtD(state.end);
           state.presetLabel = rangeLabel;
-          document.querySelectorAll('.dateItem').forEach(x=>{ x.classList.remove('active'); x.innerHTML = x.innerHTML.replace(' <span>&#10003;</span>',''); });
+          document.querySelectorAll('.dateItem').forEach(x=>{ x.classList.remove('active'); });
           dateBtn.firstChild.textContent = rangeLabel + ' ';
           calBox.classList.remove('open');
           renderAll();
@@ -1668,6 +1700,8 @@ setInterval(tickClock, 1000);
 
 Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || 'rgb(148,157,176)';
 Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue('--border-table').trim() || 'rgb(24,30,42)';
+
+dateBtn.firstChild.textContent = dateBtnLabel(state.presetLabel, state.start, state.end) + ' ';
 
 renderAll();
 refreshAllTabUnderlines();
