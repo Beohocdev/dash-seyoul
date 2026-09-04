@@ -66,7 +66,6 @@
 
   /* --- Light theme contrast overrides --- */
   body.light-theme .panel { box-shadow:0 1px 3px rgba(20,26,40,0.06); }
-  body.light-theme .tab.active { color:rgb(20,24,34); font-weight:700; }
   body.light-theme .subtab { color:rgb(70,78,96); background:rgb(236,239,246); border-color:rgb(210,216,228); }
   body.light-theme .subtab.active { background:rgb(37,71,201); color:#fff; border-color:rgb(37,71,201); }
   body.light-theme .boardFilter { color:rgb(70,78,96); }
@@ -155,10 +154,11 @@
   .split > div { flex:1; min-width:0; }
   .filters { display:flex; gap:8px; margin-bottom:10px; }
   select { background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-input); border-radius:6px; padding:6px 10px; font-size:13px; }
-  .tabs { display:flex; gap:24px; border-bottom:1px solid var(--border-strong); margin-bottom:16px; position:relative; }
-  .tab { padding:0 0 10px; font-size:14px; color:var(--text-muted); cursor:pointer; user-select:none; white-space:nowrap; }
-  .tab.active { color:#fff; font-weight:600; }
-  .tabUnderline { position:absolute; bottom:-1px; height:3px; background:rgb(88,124,255); border-radius:2px; transition:left .2s ease, width .2s ease; display:none; }
+  .tabs { display:flex; gap:2px; border-bottom:1px solid var(--border-strong); margin-bottom:16px; position:relative; background:var(--bg-input); border:1px solid var(--border-input); border-radius:999px; padding:4px; width:fit-content; max-width:100%; overflow-x:auto; }
+  .tab { position:relative; z-index:2; padding:8px 16px; font-size:13px; font-weight:500; color:var(--text-muted); cursor:pointer; user-select:none; white-space:nowrap; border-radius:999px; transition:color .25s ease; }
+  .tab:hover:not(.active) { color:var(--text-primary); }
+  .tab.active { color:#fff; font-weight:700; }
+  .tabUnderline { position:absolute; top:4px; bottom:4px; left:4px; border-radius:999px; background:linear-gradient(135deg, rgb(251,146,60), rgb(220,38,38)); box-shadow:0 3px 10px rgba(220,38,38,0.35); transition:left .32s cubic-bezier(.4,0,.2,1), width .32s cubic-bezier(.4,0,.2,1); z-index:1; display:none; }
   .subtabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
   .subtab { padding:6px 14px; border-radius:20px; font-size:12px; cursor:pointer; background:var(--bg-input); color:rgb(180,190,205); border:1px solid var(--border-input); user-select:none; }
   .subtab.active { background:rgb(37,71,201); color:#fff; border-color:rgb(37,71,201); }
@@ -389,7 +389,7 @@
     <div class="panel">
       <h3 class="boardTitle">Thống kê theo Media Buyer <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardA-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
-        <div class="tabs" id="boardA-tabs" style="border-bottom:none;margin-bottom:0">
+        <div class="tabs" id="boardA-tabs" style="margin-bottom:0">
           <span class="tabUnderline" id="boardA-underline"></span>
         </div>
         <div class="boardFilter">
@@ -412,7 +412,7 @@
     <div class="panel">
       <h3 class="boardTitle">Thống kê theo Media Creator <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardB-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
-        <div class="tabs" id="boardB-tabs" style="border-bottom:none;margin-bottom:0">
+        <div class="tabs" id="boardB-tabs" style="margin-bottom:0">
           <span class="tabUnderline" id="boardB-underline"></span>
         </div>
         <div class="boardFilter">
@@ -435,7 +435,7 @@
     <div class="panel">
       <h3 class="boardTitle">Thống kê theo Nền tảng <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardC-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
-        <div class="tabs" id="boardC-tabs" style="border-bottom:none;margin-bottom:0">
+        <div class="tabs" id="boardC-tabs" style="margin-bottom:0">
           <span class="tabUnderline" id="boardC-underline"></span>
         </div>
         <div class="boardFilter">
@@ -460,7 +460,7 @@
     <div class="panel">
       <h3 class="boardTitle">Thống kê theo Sản phẩm <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardD-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
-        <div class="tabs" id="boardD-tabs" style="border-bottom:none;margin-bottom:0">
+        <div class="tabs" id="boardD-tabs" style="margin-bottom:0">
           <span class="tabUnderline" id="boardD-underline"></span>
         </div>
         <div class="boardFilter">
@@ -1476,8 +1476,8 @@ boardATabsEl.addEventListener('click', function(e){
   boardATabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   boardA.mb = t.dataset.mb; boardA.page = 1;
-  moveTabUnderline(t, boardATabsEl, document.getElementById('boardA-underline'));
   renderBoardA();
+  requestAnimationFrame(()=> moveTabUnderline(t, boardATabsEl, document.getElementById('boardA-underline')));
 });
 const boardAMcSelect = document.getElementById('boardA-mcFilter');
 buildOptions(boardAMcSelect, MC_LIST, 'Tất cả');
@@ -1498,8 +1498,8 @@ boardBTabsEl.addEventListener('click', function(e){
   boardBTabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   boardB.mc = t.dataset.mc; boardB.page = 1;
-  moveTabUnderline(t, boardBTabsEl, document.getElementById('boardB-underline'));
   renderBoardB();
+  requestAnimationFrame(()=> moveTabUnderline(t, boardBTabsEl, document.getElementById('boardB-underline')));
 });
 const boardBPlatformSelect = document.getElementById('boardB-platformFilter');
 buildOptions(boardBPlatformSelect, PLATFORMS, 'Tất cả');
@@ -1521,8 +1521,8 @@ boardCTabsEl.addEventListener('click', function(e){
   boardCTabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   boardC.kenh = t.dataset.kenh; boardC.page = 1;
-  moveTabUnderline(t, boardCTabsEl, document.getElementById('boardC-underline'));
   renderBoardC();
+  requestAnimationFrame(()=> moveTabUnderline(t, boardCTabsEl, document.getElementById('boardC-underline')));
 });
 const boardCMbSelect = document.getElementById('boardC-mbFilter');
 buildOptions(boardCMbSelect, MB_LIST, 'Tất cả');
@@ -1548,8 +1548,8 @@ boardDTabsEl.addEventListener('click', function(e){
   boardDTabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   boardD.product = t.dataset.product; boardD.page = 1;
-  moveTabUnderline(t, boardDTabsEl, document.getElementById('boardD-underline'));
   renderBoardD();
+  requestAnimationFrame(()=> moveTabUnderline(t, boardDTabsEl, document.getElementById('boardD-underline')));
 });
 const boardDMbSelect = document.getElementById('boardD-mbFilter');
 buildOptions(boardDMbSelect, MB_LIST, 'Tất cả');
