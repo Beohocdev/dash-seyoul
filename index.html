@@ -93,7 +93,7 @@
   body.light-theme .sidebarKpiSmall .v { color:rgb(28,32,42); }
   * { box-sizing: border-box; outline:none; -webkit-tap-highlight-color:transparent; }
   body { margin:0; background:var(--bg-page); color:var(--text-primary); font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
-  .header { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border-strong); flex-wrap:wrap; gap:10px; }
+  .header { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border-strong); flex-wrap:wrap; gap:10px; position:sticky; top:0; z-index:100; background:var(--bg-page); }
   .header .title { font-size:26px; font-weight:700; display:flex; align-items:center; gap:10px; justify-content:center; grid-column:2; text-align:center; }
   .header .titleSub { font-size:14px; font-weight:400; color:var(--text-muted); margin-left:8px; }
   .header .right { display:flex; align-items:center; gap:12px; font-size:13px; color:var(--text-muted); position:relative; grid-column:3; justify-content:flex-end; }
@@ -125,13 +125,13 @@
   .calFoot { display:flex; justify-content:flex-end; margin-top:10px; }
   .applyBtn { background:rgb(37,71,201); color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; cursor:pointer; }
   .layout { display:flex; align-items:flex-start; }
-  .sidebar { width:210px; flex-shrink:0; background:var(--bg-sidebar); border-right:1px solid var(--border-strong); border-radius:0 12px 12px 0; padding:16px 10px; transition:width .2s ease; overflow-y:auto; overflow-x:hidden; position:sticky; top:0; max-height:100vh; }
+  .sidebar { width:210px; flex-shrink:0; background:var(--bg-sidebar); border-right:1px solid var(--border-strong); border-radius:0 12px 12px 0; padding:16px 10px; transition:width .2s ease; overflow-y:auto; overflow-x:hidden; position:sticky; top:var(--header-h, 64px); max-height:calc(100vh - var(--header-h, 64px)); }
   .sidebar.collapsed { width:0; padding-left:0; padding-right:0; border-right:none; max-height:0; }
   .sidebar p.label { font-size:11px; color:rgb(110,118,135); text-transform:uppercase; margin:14px 6px 6px; white-space:nowrap; }
   .sbitem { padding:9px 10px; border-radius:8px; font-size:13px; cursor:pointer; margin-bottom:2px; white-space:nowrap; user-select:none; }
   .sbitem:hover { background:var(--border-table); }
   .sbitem.active { background:rgb(37,71,201); color:#fff; }
-  .toggleBtn { width:22px; height:44px; background:var(--bg-input); border:1px solid var(--border-input); border-radius:0 8px 8px 0; color:var(--text-muted); cursor:pointer; align-self:flex-start; margin-top:20px; flex-shrink:0; position:sticky; top:20px; z-index:5; }
+  .toggleBtn { width:22px; height:44px; background:var(--bg-input); border:1px solid var(--border-input); border-radius:0 8px 8px 0; color:var(--text-muted); cursor:pointer; align-self:flex-start; margin-top:20px; flex-shrink:0; position:sticky; top:calc(var(--header-h, 64px) + 20px); z-index:5; }
   .main { flex:1; min-width:0; padding:20px; }
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
   .kpi-card { border-radius:12px; padding:14px; }
@@ -191,8 +191,16 @@
   .sidebarKpiSmall { margin:0 6px 12px; padding:10px; border-radius:10px; background:rgba(88,124,255,0.14); }
   .sidebarKpiSmall .l { font-size:11px; color:rgb(150,175,255); margin:0 0 4px; }
   .sidebarKpiSmall .v { font-size:20px; font-weight:700; color:#fff; margin:0; }
-  .boardTitle { font-size:15px; font-weight:700; margin:0 0 12px; }
+  .boardTitle { font-size:15px; font-weight:700; margin:0 0 12px; display:flex; align-items:center; }
   .boardDateLabel { font-size:12px; font-weight:400; color:var(--text-muted); margin-left:6px; }
+  .boardChartToggle { background:none; border:1px solid rgb(48,56,72); color:var(--text-muted); border-radius:6px; width:22px; height:22px; font-size:11px; cursor:pointer; margin-left:10px; display:inline-flex; align-items:center; justify-content:center; transition:transform .18s ease, color .18s ease, border-color .18s ease; flex-shrink:0; }
+  .boardChartToggle:hover { color:#fff; border-color:rgb(88,124,255); }
+  .boardChartToggle.open { transform:rotate(180deg); }
+  body.light-theme .boardChartToggle { border-color:rgb(200,206,220); color:rgb(70,78,96); }
+  .boardChartWrap { margin:0 0 16px; padding-top:2px; }
+  .boardChartTitleRow { display:flex; justify-content:flex-end; margin-bottom:2px; }
+  .boardChartTitle { font-size:12px; font-weight:600; color:rgb(88,124,255); background:rgba(88,124,255,0.12); border-radius:6px; padding:3px 10px; }
+  body.light-theme .boardChartTitle { color:rgb(37,71,201); background:rgba(37,71,201,0.10); }
   table { width:100%; border-collapse:collapse; font-size:13px; }
   td { padding:8px 6px; border-bottom:1px solid var(--border-table); white-space:nowrap; }
   .muted { color:var(--text-muted); font-size:12px; text-transform:uppercase; }
@@ -319,6 +327,11 @@
       <input type="number" step="1000" id="revMin" placeholder="Min">
       <input type="number" step="1000" id="revMax" placeholder="Max">
     </div>
+    <p class="label">Lọc theo Chi phí (VND)</p>
+    <div class="sidebarRange">
+      <input type="number" step="1000" id="spendMin" placeholder="Min">
+      <input type="number" step="1000" id="spendMax" placeholder="Max">
+    </div>
     <p class="label">CID chi tiêu &gt; 3.000.000đ</p>
     <div class="sidebarKpiSmall">
       <p class="l">Tổng số CID (trong phạm vi ngày đang lọc)</p>
@@ -374,7 +387,7 @@
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Media Buyer <span class="boardDateLabel">- Hôm nay</span></h3>
+      <h3 class="boardTitle">Thống kê theo Media Buyer <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardA-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardA-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardA-underline"></span>
@@ -391,12 +404,13 @@
           <select id="boardA-statusFilter"></select>
         </div>
       </div>
+      <div class="boardChartWrap" id="boardA-chartWrap" style="display:none"><div class="boardChartTitleRow"><span class="boardChartTitle" id="boardA-chartTitle">Đang xem: Tất cả</span></div><div style="position:relative;width:100%;height:220px"><canvas id="boardA-chart"></canvas></div></div>
       <div class="tableWrap"><table><tbody id="boardA-body"></tbody></table></div>
       <div id="boardA-pag"></div>
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Media Creator <span class="boardDateLabel">- Hôm nay</span></h3>
+      <h3 class="boardTitle">Thống kê theo Media Creator <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardB-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardB-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardB-underline"></span>
@@ -413,12 +427,13 @@
           <select id="boardB-statusFilter"></select>
         </div>
       </div>
+      <div class="boardChartWrap" id="boardB-chartWrap" style="display:none"><div class="boardChartTitleRow"><span class="boardChartTitle" id="boardB-chartTitle">Đang xem: Tất cả</span></div><div style="position:relative;width:100%;height:220px"><canvas id="boardB-chart"></canvas></div></div>
       <div class="tableWrap"><table><tbody id="boardB-body"></tbody></table></div>
       <div id="boardB-pag"></div>
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Nền tảng <span class="boardDateLabel">- Hôm nay</span></h3>
+      <h3 class="boardTitle">Thống kê theo Nền tảng <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardC-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardC-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardC-underline"></span>
@@ -437,12 +452,13 @@
           <select id="boardC-statusFilter"></select>
         </div>
       </div>
+      <div class="boardChartWrap" id="boardC-chartWrap" style="display:none"><div class="boardChartTitleRow"><span class="boardChartTitle" id="boardC-chartTitle">Đang xem: Tất cả</span></div><div style="position:relative;width:100%;height:220px"><canvas id="boardC-chart"></canvas></div></div>
       <div class="tableWrap"><table><tbody id="boardC-body"></tbody></table></div>
       <div id="boardC-pag"></div>
     </div>
 
     <div class="panel">
-      <h3 class="boardTitle">Thống kê theo Sản phẩm <span class="boardDateLabel">- Hôm nay</span></h3>
+      <h3 class="boardTitle">Thống kê theo Sản phẩm <span class="boardDateLabel">- Hôm nay</span><button type="button" class="boardChartToggle" id="boardD-chartToggle" title="Xem biểu đồ theo ngày">▾</button></h3>
       <div class="boardHeaderRow">
         <div class="tabs" id="boardD-tabs" style="border-bottom:none;margin-bottom:0">
           <span class="tabUnderline" id="boardD-underline"></span>
@@ -461,6 +477,7 @@
           <select id="boardD-statusFilter"></select>
         </div>
       </div>
+      <div class="boardChartWrap" id="boardD-chartWrap" style="display:none"><div class="boardChartTitleRow"><span class="boardChartTitle" id="boardD-chartTitle">Đang xem: Tất cả</span></div><div style="position:relative;width:100%;height:220px"><canvas id="boardD-chart"></canvas></div></div>
       <div class="tableWrap"><table><tbody id="boardD-body"></tbody></table></div>
       <div id="boardD-pag"></div>
     </div>
@@ -472,6 +489,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+(function(){
+  const headerEl = document.querySelector('.header');
+  function syncHeaderHeight(){
+    if(!headerEl) return;
+    document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+  }
+  syncHeaderHeight();
+  window.addEventListener('resize', syncHeaderHeight);
+  window.addEventListener('load', syncHeaderHeight);
+  if(window.ResizeObserver && headerEl){
+    new ResizeObserver(syncHeaderHeight).observe(headerEl);
+  }
+})();
+
 (function(){
   // Restore whichever theme was used most recently (falls back to dark if
   // nothing saved yet).
@@ -797,8 +828,8 @@ function renderRevChart(){
     type:'line',
     data:{ labels:dates.map(d=>d.slice(5)),
       datasets:[
-        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(88,124,255)', backgroundColor:'rgba(88,124,255,0.12)', fill:true, tension:0.3, pointRadius:2 },
-        { label:'Doanh thu tổng (mọi trạng thái)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(74,222,128)', backgroundColor:'rgba(74,222,128,0.12)', fill:true, tension:0.3, pointRadius:2 }
+        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(234,88,12)', backgroundColor:'rgba(234,88,12,0.14)', fill:true, tension:0.3, pointRadius:2 },
+        { label:'Doanh thu tổng (mọi trạng thái)', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(22,163,74)', backgroundColor:'rgba(22,163,74,0.14)', fill:true, tension:0.3, pointRadius:2 }
       ]},
     options:{ responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
@@ -901,8 +932,8 @@ function renderMbChart(){
   mbChart = new Chart(document.getElementById('mbChart'), {
     type:'bar',
     data:{ labels:rows.map(m=>m.MB), datasets:[
-      { label:'Chi phí', data:rows.map(m=>Math.round(m.Spend)), backgroundColor:'rgb(88,124,255)', borderRadius:4 },
-      { label:'Doanh thu', data:rows.map(m=>Math.round(m.Doanh_thu_matched)), backgroundColor:'rgb(74,222,128)', borderRadius:4 }
+      { label:'Chi phí', data:rows.map(m=>Math.round(m.Spend)), backgroundColor:'rgb(234,88,12)', borderRadius:4 },
+      { label:'Doanh thu', data:rows.map(m=>Math.round(m.Doanh_thu_matched)), backgroundColor:'rgb(22,163,74)', borderRadius:4 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ labels:{ color:tc3.text } } },
@@ -970,11 +1001,15 @@ function applyGlobalCidFilter(rows){
   const roasMax = parseFloat(document.getElementById('roasMax').value);
   const revMin = parseFloat(document.getElementById('revMin').value);
   const revMax = parseFloat(document.getElementById('revMax').value);
+  const spendMin = parseFloat(document.getElementById('spendMin').value);
+  const spendMax = parseFloat(document.getElementById('spendMax').value);
   return rows.filter(r=>{
     if(!isNaN(roasMin) && r.ROAS<roasMin) return false;
     if(!isNaN(roasMax) && r.ROAS>roasMax) return false;
     if(!isNaN(revMin) && r.Doanh_thu<revMin) return false;
     if(!isNaN(revMax) && r.Doanh_thu>revMax) return false;
+    if(!isNaN(spendMin) && r.Spend<spendMin) return false;
+    if(!isNaN(spendMax) && r.Spend>spendMax) return false;
     return true;
   });
 }
@@ -1003,7 +1038,7 @@ function renderCidRowsHtml(rows, idPrefix, allRows){
   rows.forEach((r,i)=>{
     const id = idPrefix+'-row-'+i;
     const warn = cirBadge(r.CIR, r.Doanh_thu, r.Spend);
-    html += `<tr class="rowClick" data-target="${id}"><td><span class="chev">›</span>${r.CID}${copyBtnHtml(r.CID)}</td><td>${r.MB}</td><td>${r.MC}</td><td>${r.Product||'-'}</td><td style="text-align:right">${fmt(r.Spend)}</td><td style="text-align:right">${fmt(r.Doanh_thu)}</td><td style="text-align:right" class="${roasClass(r.ROAS)}">${fmtX(r.ROAS)}</td><td style="text-align:right">${fmtPct(r.CIR)}</td><td>${warn}</td></tr>`;
+    html += `<tr class="rowClick" data-target="${id}" data-cid="${String(r.CID).replace(/"/g,'&quot;')}" data-mb="${String(r.MB).replace(/"/g,'&quot;')}"><td><span class="chev">›</span>${r.CID}${copyBtnHtml(r.CID)}</td><td>${r.MB}</td><td>${r.MC}</td><td>${r.Product||'-'}</td><td style="text-align:right">${fmt(r.Spend)}</td><td style="text-align:right">${fmt(r.Doanh_thu)}</td><td style="text-align:right" class="${roasClass(r.ROAS)}">${fmtX(r.ROAS)}</td><td style="text-align:right">${fmtPct(r.CIR)}</td><td>${warn}</td></tr>`;
     html += `<tr class="${id}" style="display:none"><td colspan="9">${cidDetailBlockHtml(r)}</td></tr>`;
   });
   if(rows.length===0){ html += `<tr><td colspan="9" class="muted" style="text-align:center;padding:20px">Không có CID nào trong phạm vi lọc</td></tr>`; }
@@ -1018,8 +1053,84 @@ function renderCidRowsHtml(rows, idPrefix, allRows){
 }
 
 const boardRowsCache = { boardA: [], boardB: [], boardC: [], boardD: [] };
+const boardChartState = { boardA: false, boardB: false, boardC: false, boardD: false };
+const boardChartScope = { boardA: null, boardB: null, boardC: null, boardD: null };
+const boardCharts = {};
+
+function renderBoardChart(boardKey){
+  if(!boardChartState[boardKey]) return;
+  const scope = boardChartScope[boardKey];
+  const cidRows = boardRowsCache[boardKey] || [];
+  let ads, ord, titleText;
+  if(scope){
+    ads = getFilteredAds().filter(r=> r.CID===scope.cid && r.MB===scope.mb);
+    ord = getFilteredOrders().filter(r=> r.status==='matched' && r.CID===scope.cid && r.MB===scope.mb);
+    titleText = 'Đang xem: CID ' + scope.cid + ' (' + scope.mb + ')';
+  } else {
+    const allowedKeys = new Set(cidRows.map(r=> r.CID+'|'+r.MB));
+    ads = getFilteredAds().filter(r=> allowedKeys.has(r.CID+'|'+r.MB));
+    ord = getFilteredOrders().filter(r=> r.status==='matched' && allowedKeys.has(r.CID+'|'+r.MB));
+    titleText = 'Đang xem: Tất cả (' + cidRows.length + ' CID)';
+  }
+  const titleEl = document.getElementById(boardKey+'-chartTitle');
+  if(titleEl) titleEl.textContent = titleText;
+  const dates = Array.from(new Set([...ads.map(r=>r.date), ...ord.map(r=>r.date)])).sort();
+  const costByDate = {}, revByDate = {};
+  ads.forEach(r=>{ costByDate[r.date]=(costByDate[r.date]||0)+r.Spend; });
+  ord.forEach(r=>{ revByDate[r.date]=(revByDate[r.date]||0)+r.Revenue; });
+  const el = document.getElementById(boardKey+'-chart');
+  if(!el) return;
+  if(boardCharts[boardKey]) boardCharts[boardKey].destroy();
+  const tc = chartThemeColors();
+  boardCharts[boardKey] = new Chart(el, {
+    type:'line',
+    data:{ labels:dates.map(d=>d.slice(5)),
+      datasets:[
+        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(234,88,12)', backgroundColor:'rgba(234,88,12,0.14)', fill:true, tension:0.3, pointRadius:2 },
+        { label:'Doanh thu', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(22,163,74)', backgroundColor:'rgba(22,163,74,0.14)', fill:true, tension:0.3, pointRadius:2 }
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ labels:{ color:tc.text } },
+        tooltip:{
+          mode:'index', intersect:false,
+          callbacks:{
+            title:function(items){ return items.length? ('Ngày: '+dates[items[0].dataIndex]) : ''; },
+            label:function(ctx){ return ctx.dataset.label+': '+fmt(ctx.parsed.y); },
+            afterBody:function(items){
+              if(!items.length) return [];
+              const d = dates[items[0].dataIndex];
+              const cost = costByDate[d]||0, rev = revByDate[d]||0;
+              const cir = rev>0? cost/rev*100 : 0;
+              const roas = cost>0? rev/cost : 0;
+              return ['CIR: '+cir.toFixed(1)+'%', 'ROAS: '+roas.toFixed(2)+'x'];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ ticks:{ color:tc.text }, grid:{ display:false }, border:{ color:tc.grid } },
+        y:{ ticks:{ color:tc.text }, grid:{ color:tc.grid }, border:{ display:false } }
+      }
+    }
+  });
+}
+
+function wireBoardChartToggle(boardKey){
+  const btn = document.getElementById(boardKey+'-chartToggle');
+  const wrap = document.getElementById(boardKey+'-chartWrap');
+  if(!btn || !wrap) return;
+  btn.addEventListener('click', function(){
+    boardChartState[boardKey] = !boardChartState[boardKey];
+    wrap.style.display = boardChartState[boardKey] ? 'block' : 'none';
+    btn.classList.toggle('open', boardChartState[boardKey]);
+    if(boardChartState[boardKey]) renderBoardChart(boardKey);
+  });
+}
 
 function renderBoardA(){
+  boardChartScope.boardA = null;
   let rows = cidUniverse();
   if(boardA.mb!=='all') rows = rows.filter(r=>r.MB===boardA.mb);
   if(boardA.mc!=='all') rows = rows.filter(r=>r.MC===boardA.mc);
@@ -1030,12 +1141,14 @@ function renderBoardA(){
   boardRowsCache.boardA = rows;
   const { pageRows, totalPages } = paginate(rows, boardA);
   document.getElementById('boardA-body').innerHTML = renderCidRowsHtml(pageRows, 'boardA', rows);
-  wireExpand('#boardA-body');
+  wireExpand('#boardA-body', 'boardA');
   document.getElementById('boardA-pag').innerHTML = pagHtml(boardA, totalPages, 'boardA');
   wirePagButtons('boardA', boardA, renderBoardA);
+  renderBoardChart('boardA');
 }
 
 function renderBoardB(){
+  boardChartScope.boardB = null;
   const kenh = boardB.platform!=='all' ? boardB.platform : undefined;
   let rows = cidUniverse(kenh);
   if(boardB.mc!=='all') rows = rows.filter(r=>r.MC===boardB.mc);
@@ -1046,12 +1159,14 @@ function renderBoardB(){
   boardRowsCache.boardB = rows;
   const { pageRows, totalPages } = paginate(rows, boardB);
   document.getElementById('boardB-body').innerHTML = renderCidRowsHtml(pageRows, 'boardB', rows);
-  wireExpand('#boardB-body');
+  wireExpand('#boardB-body', 'boardB');
   document.getElementById('boardB-pag').innerHTML = pagHtml(boardB, totalPages, 'boardB');
   wirePagButtons('boardB', boardB, renderBoardB);
+  renderBoardChart('boardB');
 }
 
 function renderBoardC(){
+  boardChartScope.boardC = null;
   const kenh = boardC.kenh!=='all' ? boardC.kenh : undefined;
   let rows = cidUniverse(kenh);
   if(boardC.mb!=='all') rows = rows.filter(r=>r.MB===boardC.mb);
@@ -1063,12 +1178,14 @@ function renderBoardC(){
   boardRowsCache.boardC = rows;
   const { pageRows, totalPages } = paginate(rows, boardC);
   document.getElementById('boardC-body').innerHTML = renderCidRowsHtml(pageRows, 'boardC', rows);
-  wireExpand('#boardC-body');
+  wireExpand('#boardC-body', 'boardC');
   document.getElementById('boardC-pag').innerHTML = pagHtml(boardC, totalPages, 'boardC');
   wirePagButtons('boardC', boardC, renderBoardC);
+  renderBoardChart('boardC');
 }
 
 function renderBoardD(){
+  boardChartScope.boardD = null;
   let rows = cidUniverse();
   if(boardD.product!=='all') rows = rows.filter(r=>r.Product===boardD.product);
   if(boardD.mb!=='all') rows = rows.filter(r=>r.MB===boardD.mb);
@@ -1080,9 +1197,10 @@ function renderBoardD(){
   boardRowsCache.boardD = rows;
   const { pageRows, totalPages } = paginate(rows, boardD);
   document.getElementById('boardD-body').innerHTML = renderCidRowsHtml(pageRows, 'boardD', rows);
-  wireExpand('#boardD-body');
+  wireExpand('#boardD-body', 'boardD');
   document.getElementById('boardD-pag').innerHTML = pagHtml(boardD, totalPages, 'boardD');
   wirePagButtons('boardD', boardD, renderBoardD);
+  renderBoardChart('boardD');
 }
 
 function exportBoardToExcel(boardKey, fileLabel){
@@ -1216,7 +1334,7 @@ function renderSidebarPies(){
   renderPie('pieRevByProduct', Object.keys(revByProduct), Object.values(revByProduct), 'money');
 }
 
-function wireExpand(containerSel){
+function wireExpand(containerSel, boardKey){
   document.querySelectorAll(containerSel+' .rowClick').forEach(row=>{
     row.addEventListener('click', (e)=>{
       e.stopPropagation();
@@ -1237,6 +1355,14 @@ function wireExpand(containerSel){
             grandTargets.forEach(t=> t.style.display='none');
           }
         });
+      }
+      if(boardKey){
+        if(hidden && row.dataset.cid){
+          boardChartScope[boardKey] = { cid: row.dataset.cid, mb: row.dataset.mb };
+        } else {
+          boardChartScope[boardKey] = null;
+        }
+        renderBoardChart(boardKey);
       }
     });
   });
@@ -1397,6 +1523,10 @@ wireCidSearch('boardA', boardA, renderBoardA);
 wireCidSearch('boardB', boardB, renderBoardB);
 wireCidSearch('boardC', boardC, renderBoardC);
 wireCidSearch('boardD', boardD, renderBoardD);
+wireBoardChartToggle('boardA');
+wireBoardChartToggle('boardB');
+wireBoardChartToggle('boardC');
+wireBoardChartToggle('boardD');
 
 function refreshAllTabUnderlines(){
   moveTabUnderline(boardATabsEl.querySelector('.tab.active'), boardATabsEl, document.getElementById('boardA-underline'));
@@ -1407,8 +1537,8 @@ function refreshAllTabUnderlines(){
 window.addEventListener('load', refreshAllTabUnderlines);
 window.addEventListener('resize', refreshAllTabUnderlines);
 
-// ---- Sidebar global ROAS / Doanh thu range filters ----
-['roasMin','roasMax','revMin','revMax'].forEach(id=>{
+// ---- Sidebar global ROAS / Doanh thu / Chi phí range filters ----
+['roasMin','roasMax','revMin','revMax','spendMin','spendMax'].forEach(id=>{
   document.getElementById(id).addEventListener('input', function(){
     boardA.page = 1; boardB.page = 1; boardC.page = 1; boardD.page = 1;
     renderBoardA(); renderBoardB(); renderBoardC(); renderBoardD();
