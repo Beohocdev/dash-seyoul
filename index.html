@@ -829,7 +829,7 @@ function renderRevChart(){
 }
 
 function cidUniverse(kenh){
-  const ads = getFilteredAds();
+  const ads = getFilteredAds().filter(r=> !kenh || r.Kenh===kenh);
   const ord = getFilteredOrders().filter(r=>r.status==='matched' && r.CID && (!kenh || r.Kenh===kenh));
   const map = {};
   ads.forEach(r=>{
