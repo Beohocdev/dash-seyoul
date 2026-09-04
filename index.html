@@ -698,7 +698,24 @@ const MC_LIST = Array.from(new Set(Object.values(REF).map(r=>r['MC PIC']).filter
 if(!MC_LIST.includes('Không xác định')) MC_LIST.push('Không xác định');
 const PLATFORMS = ['Facebook (Mess)','Webcake (LDP)'];
 const PRODUCT_LIST = Array.from(new Set(Object.values(REF).map(r=>r['Sản phẩm']).filter(Boolean))).sort();
-const STATUS_LIST = ['Rất ngon','Đang ngon','Warning zone','Nguy hiểm','Cần xem xét','Trống'];
+const STATUS_LIST = ['Kill','Follow','Có Signal','Rất ngon','Đang ngon','Warning zone','Nguy hiểm','Cần xem xét','Chưa đủ ngưỡng (<500k)'];
+const STATUS_TIERS = [
+  { label:'Tầng 3 · Spend ≥ 1tr', items:[
+    { value:'Rất ngon', text:'Rất ngon (CIR<35%)' },
+    { value:'Đang ngon', text:'Đang ngon (CIR<48%)' },
+    { value:'Warning zone', text:'Warning zone (CIR≤60%)' },
+    { value:'Nguy hiểm', text:'Nguy hiểm (CIR>60%)' },
+    { value:'Cần xem xét', text:'Cần xem xét (không doanh thu)' }
+  ]},
+  { label:'Tầng 2 · 500k ≤ Spend < 1tr', items:[
+    { value:'Kill', text:'Kill (CIR=0 hoặc >70%)' },
+    { value:'Có Signal', text:'Có Signal (CIR≤45%)' },
+    { value:'Follow', text:'Follow (45%<CIR≤70%)' }
+  ]},
+  { label:'Tầng 1 · Spend < 500k', items:[
+    { value:'Chưa đủ ngưỡng (<500k)', text:'Chưa đủ ngưỡng (<500k)' }
+  ]}
+];
 const PAGE_SIZE = 12;
 
 function toDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); }
@@ -986,9 +1003,15 @@ function cidDetailBlockHtml(r){
 }
 
 function cirBadge(cir, revenue, spend){
-  if((spend||0) < 1000000) return '';
-  if((spend||0) <= 0 && (revenue||0) <= 0) return `<span class="badge-cir badge-cir-testing">Trống</span>`;
+  spend = spend||0;
+  if(spend < 500000) return '';
   const pct = (cir||0)*100;
+  if(spend < 1000000){
+    const cirZero = (revenue||0)<=0 || pct===0;
+    if(cirZero || pct>70) return `<span class="badge-cir badge-cir-bad">Kill</span>`;
+    if(pct<=45) return `<span class="badge-cir badge-cir-great">Có Signal</span>`;
+    return `<span class="badge-cir badge-cir-warn">Follow</span>`;
+  }
   if((revenue||0)<=0 || pct===0) return `<span class="badge-cir badge-cir-neutral">Cần xem xét</span>`;
   if(pct < 35) return `<span class="badge-cir badge-cir-great">Rất ngon</span>`;
   if(pct < 48) return `<span class="badge-cir badge-cir-good">Đang ngon</span>`;
@@ -1239,10 +1262,17 @@ function renderSidebarSpendKpi(){
 }
 
 function cidStatusLabel(r){
-  if((r.Spend||0) < 1000000) return '';
-  if((r.Spend||0) <= 0 && (r.Doanh_thu||0) <= 0) return 'Trống';
+  const spend = r.Spend||0;
+  if(spend < 500000) return 'Chưa đủ ngưỡng (<500k)';
   const pct = (r.CIR||0)*100;
-  if((r.Doanh_thu||0)<=0 || pct===0) return 'Cần xem xét';
+  const revenue = r.Doanh_thu||0;
+  if(spend < 1000000){
+    const cirZero = revenue<=0 || pct===0;
+    if(cirZero || pct>70) return 'Kill';
+    if(pct<=45) return 'Có Signal';
+    return 'Follow';
+  }
+  if(revenue<=0 || pct===0) return 'Cần xem xét';
   if(pct < 35) return 'Rất ngon';
   if(pct < 48) return 'Đang ngon';
   if(pct <= 60) return 'Warning zone';
@@ -1405,6 +1435,14 @@ function buildOptions(selectEl, values, allLabel){
   selectEl.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v=>`<option value="${v}">${v}</option>`).join('');
 }
 
+function buildStatusOptions(selectEl, tiers, allLabel){
+  const groups = tiers.map(tier=>{
+    const opts = tier.items.map(it=>`<option value="${it.value}">${it.text}</option>`).join('');
+    return `<optgroup label="${tier.label}">${opts}</optgroup>`;
+  }).join('');
+  selectEl.innerHTML = `<option value="all">${allLabel}</option>` + groups;
+}
+
 // ---- Board A: theo Media Buyer ----
 const boardATabsEl = document.getElementById('boardA-tabs');
 boardATabsEl.insertAdjacentHTML('afterbegin', ['all',...MB_LIST].map((mb,i)=>`<div class="tab ${i===0?'active':''}" data-mb="${mb}">${mb==='all'?'Tất cả':mb}</div>`).join(''));
@@ -1422,7 +1460,7 @@ boardAMcSelect.addEventListener('change', function(){
   boardA.mc = this.value; boardA.page = 1; renderBoardA();
 });
 const boardAStatusSelect = document.getElementById('boardA-statusFilter');
-buildOptions(boardAStatusSelect, STATUS_LIST, 'Tất cả');
+buildStatusOptions(boardAStatusSelect, STATUS_TIERS, 'Tất cả');
 boardAStatusSelect.addEventListener('change', function(){
   boardA.status = this.value; boardA.page = 1; renderBoardA();
 });
@@ -1444,7 +1482,7 @@ boardBPlatformSelect.addEventListener('change', function(){
   boardB.platform = this.value; boardB.page = 1; renderBoardB();
 });
 const boardBStatusSelect = document.getElementById('boardB-statusFilter');
-buildOptions(boardBStatusSelect, STATUS_LIST, 'Tất cả');
+buildStatusOptions(boardBStatusSelect, STATUS_TIERS, 'Tất cả');
 boardBStatusSelect.addEventListener('change', function(){
   boardB.status = this.value; boardB.page = 1; renderBoardB();
 });
@@ -1472,7 +1510,7 @@ boardCMcSelect.addEventListener('change', function(){
   boardC.mc = this.value; boardC.page = 1; renderBoardC();
 });
 const boardCStatusSelect = document.getElementById('boardC-statusFilter');
-buildOptions(boardCStatusSelect, STATUS_LIST, 'Tất cả');
+buildStatusOptions(boardCStatusSelect, STATUS_TIERS, 'Tất cả');
 boardCStatusSelect.addEventListener('change', function(){
   boardC.status = this.value; boardC.page = 1; renderBoardC();
 });
@@ -1499,7 +1537,7 @@ boardDMcSelect.addEventListener('change', function(){
   boardD.mc = this.value; boardD.page = 1; renderBoardD();
 });
 const boardDStatusSelect = document.getElementById('boardD-statusFilter');
-buildOptions(boardDStatusSelect, STATUS_LIST, 'Tất cả');
+buildStatusOptions(boardDStatusSelect, STATUS_TIERS, 'Tất cả');
 boardDStatusSelect.addEventListener('change', function(){
   boardD.status = this.value; boardD.page = 1; renderBoardD();
 });
