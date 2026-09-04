@@ -1109,8 +1109,8 @@ function renderBoardChart(boardKey){
     type:'line',
     data:{ labels:dates.map(d=>d.slice(5)),
       datasets:[
-        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(234,88,12)', backgroundColor:'rgba(234,88,12,0.14)', fill:true, tension:0.3, pointRadius:2 },
-        { label:'Doanh thu', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(22,163,74)', backgroundColor:'rgba(22,163,74,0.14)', fill:true, tension:0.3, pointRadius:2 }
+        { label:'Chi phí', data:dates.map(d=>Math.round(costByDate[d]||0)), borderColor:'rgb(234,88,12)', backgroundColor:'rgba(234,88,12,0.14)', fill:false, tension:0.3, pointRadius:2 },
+        { label:'Doanh thu', data:dates.map(d=>Math.round(revByDate[d]||0)), borderColor:'rgb(22,163,74)', backgroundColor:'rgba(22,163,74,0.14)', fill:false, tension:0.3, pointRadius:2 }
       ]},
     options:{ responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
